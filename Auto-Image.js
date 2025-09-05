@@ -1925,44 +1925,6 @@
         input.click();
       }),
 
-    createFileDownloader: (data, filename) => {
-      const blob = new Blob([data], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    },
-
-    createFileUploader: () =>
-      new Promise((resolve, reject) => {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = '.json';
-        input.onchange = (e) => {
-          const file = e.target.files[0];
-          if (file) {
-            const reader = new FileReader();
-            reader.onload = () => {
-              try {
-                const data = JSON.parse(reader.result);
-                resolve(data);
-              } catch (error) {
-                reject(new Error('Invalid JSON file'));
-              }
-            };
-            reader.onerror = () => reject(new Error('File reading error'));
-            reader.readAsText(file);
-          } else {
-            reject(new Error('No file selected'));
-          }
-        };
-        input.click();
-      }),
-
     extractAvailableColors: () => {
       const colorElements = document.querySelectorAll('.tooltip button[id^="color-"]');
       if (colorElements.length === 0) {
@@ -2332,35 +2294,6 @@
       }
     },
 
-    saveProgressToFile: () => {
-      try {
-        const progressData = Utils.buildProgressData();
-        const filename = `wplace-bot-progress-${new Date()
-          .toISOString()
-          .slice(0, 19)
-          .replace(/:/g, '-')}.json`;
-        Utils.createFileDownloader(JSON.stringify(progressData, null, 2), filename);
-        return true;
-      } catch (error) {
-        console.error('Error saving to file:', error);
-        return false;
-      }
-    },
-
-    loadProgressFromFile: async () => {
-      try {
-        const data = await Utils.createFileUploader();
-        if (!data || !data.state) {
-          throw new Error('Invalid file format');
-        }
-
-        return Utils.restoreProgress(data);
-      } catch (error) {
-        console.error('Error loading from file:', error);
-        throw error;
-      }
-    },
-
     // Helper function to restore overlay from loaded data
     restoreOverlayFromData: async () => {
       if (!state.imageLoaded || !state.imageData || !state.startPosition || !state.region) {
@@ -2548,7 +2481,7 @@
 
   // UI UPDATE FUNCTIONS (declared early to avoid reference errors)
   let updateUI = () => {};
-  let updateStats = (isManualRefresh) => {};
+  let updateStats = () => {};
   let updateDataButtons = () => {};
 
   function updateActiveColorPalette() {
@@ -3064,18 +2997,6 @@
               )}">
                 <i class="fas fa-folder-open"></i>
                 <span>${Utils.t('loadData')}</span>
-              </button>
-            </div>
-            <div class="wplace-row">
-              <button id="saveToFileBtn" class="wplace-btn wplace-btn-file" disabled>
-                <i class="fas fa-download"></i>
-                <span>${Utils.t('saveToFile')}</span>
-              </button>
-              <button id="loadFromFileBtn" class="wplace-btn wplace-btn-file" disabled title="${Utils.t(
-                'waitingTokenGenerator'
-              )}">
-                <i class="fas fa-upload"></i>
-                <span>${Utils.t('loadFromFile')}</span>
               </button>
             </div>
           </div>
@@ -3790,8 +3711,6 @@
     const stopBtn = container.querySelector('#stopBtn');
     const saveBtn = container.querySelector('#saveBtn');
     const loadBtn = container.querySelector('#loadBtn');
-    const saveToFileBtn = container.querySelector('#saveToFileBtn');
-    const loadFromFileBtn = container.querySelector('#loadFromFileBtn');
 
     container.querySelectorAll('.wplace-section-title').forEach((title) => {
       // Add a right-side arrow if it doesn't exist
@@ -3812,12 +3731,6 @@
     if (loadBtn) {
       loadBtn.disabled = !state.initialSetupComplete;
       loadBtn.title = state.initialSetupComplete
-        ? ''
-        : '🔄 Waiting for initial setup to complete...';
-    }
-    if (loadFromFileBtn) {
-      loadFromFileBtn.disabled = !state.initialSetupComplete;
-      loadFromFileBtn.title = state.initialSetupComplete
         ? ''
         : '🔄 Waiting for initial setup to complete...';
     }
@@ -3856,8 +3769,6 @@
     if (!statsContainer || !statsArea || !closeStatsBtn) {
       // Note: base CSS now aligns with this layout: main panel at left:20px (width 280), stats at left:330px.
     }
-
-    const header = container.querySelector('.wplace-header');
 
     makeDraggable(container);
 
@@ -4477,62 +4388,6 @@
       });
     }
 
-    if (saveToFileBtn) {
-      saveToFileBtn.addEventListener('click', () => {
-        const success = Utils.saveProgressToFile();
-        if (success) {
-          updateUI('fileSaved', 'success');
-          Utils.showAlert(Utils.t('fileSaved'), 'success');
-        } else {
-          Utils.showAlert(Utils.t('fileError'), 'error');
-        }
-      });
-    }
-
-    if (loadFromFileBtn) {
-      loadFromFileBtn.addEventListener('click', async () => {
-        // Check if initial setup is complete
-        if (!state.initialSetupComplete) {
-          Utils.showAlert(Utils.t('pleaseWaitFileSetup'), 'warning');
-          return;
-        }
-
-        try {
-          const success = await Utils.loadProgressFromFile();
-          if (success) {
-            updateUI('fileLoaded', 'success');
-            Utils.showAlert(Utils.t('fileLoaded'), 'success');
-            updateDataButtons();
-
-            await updateStats();
-
-            // Restore overlay if image data was loaded from file
-            await Utils.restoreOverlayFromData().catch((error) => {
-              console.error('Failed to restore overlay from file:', error);
-            });
-
-            if (state.colorsChecked) {
-              uploadBtn.disabled = false;
-              selectPosBtn.disabled = false;
-              resizeBtn.disabled = false;
-            } else {
-              uploadBtn.disabled = false;
-            }
-
-            if (state.imageLoaded && state.startPosition && state.region && state.colorsChecked) {
-              startBtn.disabled = false;
-            }
-          }
-        } catch (error) {
-          if (error.message === 'Invalid JSON file') {
-            Utils.showAlert(Utils.t('invalidFileFormat'), 'error');
-          } else {
-            Utils.showAlert(Utils.t('fileError'), 'error');
-          }
-        }
-      });
-    }
-
     updateUI = (messageKey, type = 'default', params = {}, silent = false) => {
       const message = Utils.t(messageKey, params);
       statusText.textContent = message;
@@ -4754,7 +4609,6 @@
     updateDataButtons = () => {
       const hasImageData = state.imageLoaded && state.imageData;
       saveBtn.disabled = !hasImageData;
-      saveToFileBtn.disabled = !hasImageData;
     };
 
     updateDataButtons();
@@ -7114,11 +6968,10 @@
   console.log('📱 Turnstile widgets: DISABLED - pure background token generation only!');
 
   // Function to enable file operations after initial startup setup is complete
-  function enableFileOperations() {
+  function enableProgressDataOperations() {
     state.initialSetupComplete = true;
 
     const loadBtn = document.querySelector('#loadBtn');
-    const loadFromFileBtn = document.querySelector('#loadFromFileBtn');
     const uploadBtn = document.querySelector('#uploadBtn');
 
     if (loadBtn) {
@@ -7130,17 +6983,6 @@
         if (loadBtn) loadBtn.style.animation = '';
       }, 600);
       console.log('✅ Load Progress button enabled after initial setup');
-    }
-
-    if (loadFromFileBtn) {
-      loadFromFileBtn.disabled = false;
-      loadFromFileBtn.title = '';
-      // Add a subtle animation to indicate the button is now available
-      loadFromFileBtn.style.animation = 'pulse 0.6s ease-in-out';
-      setTimeout(() => {
-        if (loadFromFileBtn) loadFromFileBtn.style.animation = '';
-      }, 600);
-      console.log('✅ Load from File button enabled after initial setup');
     }
 
     if (uploadBtn) {
@@ -7164,7 +7006,7 @@
     if (isTokenValid()) {
       console.log('✅ Valid token already available, skipping initialization');
       updateUI('tokenReady', 'success');
-      enableFileOperations(); // Enable file operations since initial setup is complete
+      enableProgressDataOperations(); // Enable file operations since initial setup is complete
       return;
     }
 
@@ -7182,7 +7024,7 @@
         console.log('✅ Startup token generated successfully');
         updateUI('tokenReady', 'success');
         Utils.showAlert(Utils.t('tokenGeneratorReady'), 'success');
-        enableFileOperations(); // Enable file operations since initial setup is complete
+        enableProgressDataOperations(); // Enable file operations since initial setup is complete
       } else {
         console.warn(
           '⚠️ Startup token generation failed (no token received), will retry when needed'
@@ -7190,14 +7032,14 @@
         updateUI('tokenRetryLater', 'warning');
         // Still enable file operations even if initial token generation fails
         // Users can load progress and use manual/hybrid modes
-        enableFileOperations();
+        enableProgressDataOperations();
       }
     } catch (error) {
       console.error('❌ Critical error during Turnstile initialization:', error); // More specific error
       updateUI('tokenRetryLater', 'warning');
       // Still enable file operations even if initial setup fails
       // Users can load progress and use manual/hybrid modes
-      enableFileOperations();
+      enableProgressDataOperations();
       // Don't show error alert for initialization failures, just log them
     }
   }
