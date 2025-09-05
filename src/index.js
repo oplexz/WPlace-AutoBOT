@@ -1,190 +1,10 @@
-import { CONFIG } from './config';
+/* cSpell:disable */
+
+import { CONFIG } from './config.js';
+import { ThemeManager } from './theme.js';
+import { translationManager, t } from './translations.js';
 
 (async () => {
-    function applyTheme() {
-        // Toggle theme class on documentElement so CSS vars cascade to our UI
-        document.documentElement.classList.remove(
-            'wplace-theme-classic',
-            'wplace-theme-classic-light',
-            'wplace-theme-neon'
-        );
-        document.documentElement.classList.add('wplace-theme-classic');
-
-        // Also set CSS variables explicitly in case you want runtime overrides
-        const root = document.documentElement;
-        const setVar = (k, v) => {
-            try {
-                root.style.setProperty(k, v);
-            } catch (_e) {
-                // Silently ignore CSS property setting errors
-            }
-        };
-
-        setVar('--wplace-primary', CONFIG.THEME.primary);
-        setVar('--wplace-secondary', CONFIG.THEME.secondary);
-        setVar('--wplace-accent', CONFIG.THEME.accent);
-        setVar('--wplace-text', CONFIG.THEME.text);
-        setVar('--wplace-highlight', CONFIG.THEME.highlight);
-        setVar('--wplace-success', CONFIG.THEME.success);
-        setVar('--wplace-error', CONFIG.THEME.error);
-        setVar('--wplace-warning', CONFIG.THEME.warning);
-
-        // Typography + look
-        setVar('--wplace-font', CONFIG.THEME.fontFamily || "'Segoe UI', Roboto, sans-serif");
-        setVar('--wplace-radius', '' + (CONFIG.THEME.borderRadius || '12px'));
-        setVar('--wplace-border-style', '' + (CONFIG.THEME.borderStyle || 'solid'));
-        setVar('--wplace-border-width', '' + (CONFIG.THEME.borderWidth || '1px'));
-        setVar('--wplace-backdrop', '' + (CONFIG.THEME.backdropFilter || 'blur(10px)'));
-        setVar('--wplace-border-color', 'rgba(255,255,255,0.1)');
-    }
-
-    // Simple translation cache
-    const translationCache = new Map();
-
-    // Dynamically loaded translations
-    let loadedTranslations = {};
-
-    // Function to load translations from JSON file with retry mechanism
-    const loadTranslations = async (retryCount = 0) => {
-        const LANGUAGE = 'en';
-
-        if (loadedTranslations[LANGUAGE]) {
-            return loadedTranslations[LANGUAGE];
-        }
-
-        // Load translations from CDN
-        const url = `https://wplace-autobot.github.io/WPlace-AutoBOT/main/lang/${LANGUAGE}.json`;
-        const maxRetries = 3;
-        const baseDelay = 1000; // 1 second
-
-        try {
-            if (retryCount === 0) {
-                console.log(`🔄 Loading ${LANGUAGE} translations from CDN...`);
-            } else {
-                console.log(`🔄 Retrying ${LANGUAGE} translations (attempt ${retryCount + 1}/${maxRetries + 1})...`);
-            }
-
-            const response = await fetch(url);
-            if (response.ok) {
-                const translations = await response.json();
-
-                // Validate that translations is an object with keys
-                if (typeof translations === 'object' && translations !== null && Object.keys(translations).length > 0) {
-                    loadedTranslations[LANGUAGE] = translations;
-                    console.log(
-                        `📚 Loaded ${LANGUAGE} translations successfully from CDN (${
-                            Object.keys(translations).length
-                        } keys)`
-                    );
-                    return translations;
-                } else {
-                    console.warn(`❌ Invalid translation format for ${LANGUAGE}`);
-                    throw new Error('Invalid translation format');
-                }
-            } else {
-                console.warn(
-                    `❌ CDN returned HTTP ${response.status}: ${response.statusText} for ${LANGUAGE} translations`
-                );
-                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-            }
-        } catch (error) {
-            console.error(`❌ Failed to load ${LANGUAGE} translations from CDN (attempt ${retryCount + 1}):`, error);
-
-            // Retry with exponential backoff
-            if (retryCount < maxRetries) {
-                const delay = baseDelay * Math.pow(2, retryCount);
-                console.log(`⏳ Retrying in ${delay}ms...`);
-                await new Promise((resolve) => setTimeout(resolve, delay));
-                return loadTranslations(retryCount + 1);
-            }
-        }
-
-        return null;
-    };
-
-    // Simple user notification function for critical issues
-    const showTranslationWarning = (message) => {
-        try {
-            // Create a simple temporary notification banner
-            const warning = document.createElement('div');
-            warning.style.cssText = `
-        position: fixed; top: 10px; right: 10px; z-index: 10001;
-        background: rgba(255, 193, 7, 0.95); color: #212529; padding: 12px 16px;
-        border-radius: 8px; font-size: 14px; font-weight: 500;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3); border: 1px solid rgba(255, 193, 7, 0.8);
-        max-width: 300px; word-wrap: break-word;
-      `;
-            warning.textContent = message;
-            document.body.appendChild(warning);
-
-            // Auto-remove after 8 seconds
-            setTimeout(() => {
-                if (warning.parentNode) {
-                    warning.remove();
-                }
-            }, 8000);
-        } catch (e) {
-            // If DOM manipulation fails, just log
-            console.warn('Failed to show translation warning UI:', e);
-        }
-    };
-
-    // Initialize translations function
-    const initializeTranslations = async () => {
-        try {
-            console.log('🌐 Initializing translation system...');
-
-            // Always ensure English is loaded as fallback first
-            if (!loadedTranslations['en']) {
-                const englishLoaded = await loadTranslations();
-                if (!englishLoaded) {
-                    console.warn('⚠️ Failed to load English translations from CDN, using fallback');
-                    showTranslationWarning('⚠️ Translation loading failed, using basic fallbacks');
-                }
-            }
-
-            console.log(`✅ Translation system initialized. Active language: ${state.language}`);
-        } catch (error) {
-            console.error('❌ Translation initialization failed:', error);
-            // Ensure state has a valid language even if loading fails
-            if (!state.language) {
-                state.language = 'en';
-            }
-            console.warn('⚠️ Using fallback translations due to initialization failure');
-            showTranslationWarning('⚠️ Translation system error, using basic English');
-        }
-    };
-
-    // Emergency fallback TEXT (minimal)
-    const FALLBACK_TEXT = {
-        en: {
-            title: 'WPlace Auto-Image',
-            toggleOverlay: 'Toggle Overlay',
-            scanColors: 'Scan Colors',
-            uploadImage: 'Upload Image',
-            resizeImage: 'Resize Image',
-            selectPosition: 'Select Position',
-            startPainting: 'Start Painting',
-            stopPainting: 'Stop Painting',
-            progress: 'Progress',
-            pixels: 'Pixels',
-            charges: 'Charges',
-            batchSize: 'Batch Size',
-            cooldownSettings: 'Cooldown Settings',
-            waitCharges: 'Wait for Charges',
-            settings: 'Settings',
-            showStats: 'Show Statistics',
-            compactMode: 'Compact Mode',
-            minimize: 'Minimize',
-            tokenCapturedSuccess: 'Token captured successfully',
-            turnstileInstructions: 'Complete the verification',
-            hideTurnstileBtn: 'Hide',
-            chargesReadyMessage: 'Charges are ready',
-            chargesReadyNotification: 'WPlace AutoBot',
-            initMessage: "Click 'Upload Image' to begin",
-        },
-    };
-
     // GLOBAL STATE
     const state = {
         running: false,
@@ -911,7 +731,7 @@ import { CONFIG } from './config';
         if (source === 'turnstile-capture' && token) {
             setTurnstileToken(token);
             if (document.querySelector('#statusText')?.textContent.includes('CAPTCHA')) {
-                Utils.showAlert(Utils.t('tokenCapturedSuccess'), 'success');
+                Utils.showAlert(t('tokenCapturedSuccess'), 'success');
                 updateUI('colorsFound', 'success', { count: state.availableColors.length });
             }
         }
@@ -1083,7 +903,7 @@ import { CONFIG } from './config';
             overlay.className = 'wplace-turnstile-overlay wplace-overlay-hidden';
 
             const title = document.createElement('div');
-            title.textContent = Utils.t('turnstileInstructions');
+            title.textContent = t('turnstileInstructions');
             title.className = 'wplace-turnstile-title';
 
             const host = document.createElement('div');
@@ -1091,7 +911,7 @@ import { CONFIG } from './config';
             host.className = 'wplace-turnstile-host';
 
             const hideBtn = document.createElement('button');
-            hideBtn.textContent = Utils.t('hideTurnstileBtn');
+            hideBtn.textContent = t('hideTurnstileBtn');
             hideBtn.className = 'wplace-turnstile-hide-btn';
             hideBtn.addEventListener('click', () => overlay.remove());
 
@@ -1445,52 +1265,6 @@ import { CONFIG } from './config';
             });
             if (onClick) button.addEventListener('click', onClick);
             return button;
-        },
-
-        // Synchronous translation function for UI rendering
-        t: (key, params = {}) => {
-            // Try to get from cache first
-            const cacheKey = `${state.language}_${key}`;
-            if (translationCache.has(cacheKey)) {
-                let text = translationCache.get(cacheKey);
-                Object.keys(params).forEach((param) => {
-                    text = text.replace(`{${param}}`, params[param]);
-                });
-                return text;
-            }
-
-            // Try dynamically loaded translations (already loaded)
-            if (loadedTranslations[state.language]?.[key]) {
-                let text = loadedTranslations[state.language][key];
-                // Cache for future use
-                translationCache.set(cacheKey, text);
-                Object.keys(params).forEach((param) => {
-                    text = text.replace(`{${param}}`, params[param]);
-                });
-                return text;
-            }
-
-            // Fallback to English if current language failed
-            if (state.language !== 'en' && loadedTranslations['en']?.[key]) {
-                let text = loadedTranslations['en'][key];
-                Object.keys(params).forEach((param) => {
-                    text = text.replace(`{${param}}`, params[param]);
-                });
-                return text;
-            }
-
-            // Final fallback to emergency fallback or key
-            let text = FALLBACK_TEXT[state.language]?.[key] || FALLBACK_TEXT.en?.[key] || key;
-            Object.keys(params).forEach((param) => {
-                text = text.replace(new RegExp(`\\{${param}\\}`, 'g'), params[param]);
-            });
-
-            // Log missing translations for debugging
-            if (text === key && key !== 'undefined') {
-                console.warn(`⚠️ Missing translation for key: ${key} (language: ${state.language})`);
-            }
-
-            return text;
         },
 
         showAlert: (message, type = 'info') => {
@@ -2472,32 +2246,10 @@ import { CONFIG } from './config';
         if (existingStats) existingStats.remove();
         if (existingSettings) existingSettings.remove();
 
-        await initializeTranslations();
+        await translationManager.initializeTranslations();
 
-        applyTheme(); // <- new: set CSS vars and theme class before building UI
-
-        function appendLinkOnce(href, attributes = {}) {
-            // Check if a link with the same href already exists in the document head
-            const exists = Array.from(document.head.querySelectorAll('link')).some((link) => link.href === href);
-            if (exists) return;
-
-            const link = document.createElement('link');
-            link.rel = 'stylesheet';
-            link.href = href;
-
-            // Add any additional attributes (e.g., data-* attributes)
-            for (const [key, value] of Object.entries(attributes)) {
-                link.setAttribute(key, value);
-            }
-
-            document.head.appendChild(link);
-        }
-
-        appendLinkOnce('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css');
-
-        appendLinkOnce('https://wplace-autobot.github.io/WPlace-AutoBOT/main/auto-image-styles.css', {
-            'data-wplace-theme': 'true',
-        });
+        ThemeManager.applyTheme();
+        ThemeManager.loadThemeStyles();
 
         const container = document.createElement('div');
         container.id = 'wplace-image-bot-container';
@@ -2505,19 +2257,19 @@ import { CONFIG } from './config';
       <div class="wplace-header">
         <div class="wplace-header-title">
           <i class="fas fa-image"></i>
-          <span>${Utils.t('title')}</span>
+          <span>${t('title')}</span>
         </div>
         <div class="wplace-header-controls">
-          <button id="settingsBtn" class="wplace-header-btn" title="${Utils.t('settings')}">
+          <button id="settingsBtn" class="wplace-header-btn" title="${t('settings')}">
             <i class="fas fa-cog"></i>
           </button>
-          <button id="statsBtn" class="wplace-header-btn" title="${Utils.t('showStats')}">
+          <button id="statsBtn" class="wplace-header-btn" title="${t('showStats')}">
             <i class="fas fa-chart-bar"></i>
           </button>
-          <button id="compactBtn" class="wplace-header-btn" title="${Utils.t('compactMode')}">
+          <button id="compactBtn" class="wplace-header-btn" title="${t('compactMode')}">
             <i class="fas fa-compress"></i>
           </button>
-          <button id="minimizeBtn" class="wplace-header-btn" title="${Utils.t('minimize')}">
+          <button id="minimizeBtn" class="wplace-header-btn" title="${t('minimize')}">
             <i class="fas fa-minus"></i>
           </button>
         </div>
@@ -2526,7 +2278,7 @@ import { CONFIG } from './config';
         <!-- Status Section - Always visible -->
         <div class="wplace-status-section">
           <div id="statusText" class="wplace-status status-default">
-            ${Utils.t('initMessage')}
+            ${t('initMessage')}
           </div>
           <div class="wplace-progress">
             <div id="progressBar" class="wplace-progress-bar" style="width: 0%"></div>
@@ -2538,17 +2290,15 @@ import { CONFIG } from './config';
           <div class="wplace-section-title">🖼️ Image Management</div>
           <div class="wplace-controls">
             <div class="wplace-row">
-              <button id="uploadBtn" class="wplace-btn wplace-btn-upload" disabled title="${Utils.t(
-                  'waitingSetupComplete'
-              )}">
+              <button id="uploadBtn" class="wplace-btn wplace-btn-upload" disabled title="${t('waitingSetupComplete')}">
                 <i class="fas fa-upload"></i>
-                <span>${Utils.t('uploadImage')}</span>
+                <span>${t('uploadImage')}</span>
               </button>
             </div>
             <div class="wplace-row single">
               <button id="selectPosBtn" class="wplace-btn wplace-btn-select" disabled>
                 <i class="fas fa-crosshairs"></i>
-                <span>${Utils.t('selectPosition')}</span>
+                <span>${t('selectPosition')}</span>
               </button>
             </div>
           </div>
@@ -2561,17 +2311,17 @@ import { CONFIG } from './config';
             <div class="wplace-row">
               <button id="startBtn" class="wplace-btn wplace-btn-start" disabled>
                 <i class="fas fa-play"></i>
-                <span>${Utils.t('startPainting')}</span>
+                <span>${t('startPainting')}</span>
               </button>
               <button id="stopBtn" class="wplace-btn wplace-btn-stop" disabled>
                 <i class="fas fa-stop"></i>
-                <span>${Utils.t('stopPainting')}</span>
+                <span>${t('stopPainting')}</span>
               </button>
             </div>
             <div class="wplace-row single">
                 <button id="toggleOverlayBtn" class="wplace-btn wplace-btn-overlay" disabled>
                     <i class="fas fa-eye"></i>
-                    <span>${Utils.t('toggleOverlay')}</span>
+                    <span>${t('toggleOverlay')}</span>
                 </button>
             </div>
           </div>
@@ -2579,9 +2329,9 @@ import { CONFIG } from './config';
 
         <!-- Cooldown Section -->
         <div class="wplace-section">
-            <div class="wplace-section-title">⏱️ ${Utils.t('cooldownSettings')}</div>
+            <div class="wplace-section-title">⏱️ ${t('cooldownSettings')}</div>
             <div class="wplace-cooldown-control">
-                <label id="cooldownLabel">${Utils.t('waitCharges')}:</label>
+                <label id="cooldownLabel">${t('waitCharges')}:</label>
                 <div class="wplace-dual-control-compact">
                     <div class="wplace-slider-container-compact">
                         <input type="range" id="cooldownSlider" class="wplace-slider" min="1" max="1" value="${
@@ -2594,7 +2344,7 @@ import { CONFIG } from './config';
                             state.cooldownChargeThreshold
                         }">
                         <button id="cooldownIncrease" class="wplace-input-btn-compact" type="button">+</button>
-                        <span id="cooldownValue" class="wplace-input-label-compact">${Utils.t('charges')}</span>
+                        <span id="cooldownValue" class="wplace-input-label-compact">${t('charges')}</span>
                     </div>
                 </div>
             </div>
@@ -2607,13 +2357,11 @@ import { CONFIG } from './config';
             <div class="wplace-row">
               <button id="saveBtn" class="wplace-btn wplace-btn-primary" disabled>
                 <i class="fas fa-save"></i>
-                <span>${Utils.t('saveData')}</span>
+                <span>${t('saveData')}</span>
               </button>
-              <button id="loadBtn" class="wplace-btn wplace-btn-primary" disabled title="${Utils.t(
-                  'waitingTokenGenerator'
-              )}">
+              <button id="loadBtn" class="wplace-btn wplace-btn-primary" disabled title="${t('waitingTokenGenerator')}">
                 <i class="fas fa-folder-open"></i>
-                <span>${Utils.t('loadData')}</span>
+                <span>${t('loadData')}</span>
               </button>
             </div>
           </div>
@@ -2629,13 +2377,13 @@ import { CONFIG } from './config';
       <div class="wplace-header">
         <div class="wplace-header-title">
           <i class="fas fa-chart-bar"></i>
-          <span>${Utils.t('paintingStats')}</span>
+          <span>${t('paintingStats')}</span>
         </div>
         <div class="wplace-header-controls">
-          <button id="refreshChargesBtn" class="wplace-header-btn" title="${Utils.t('refreshCharges')}">
+          <button id="refreshChargesBtn" class="wplace-header-btn" title="${t('refreshCharges')}">
             <i class="fas fa-sync"></i>
           </button>
-          <button id="closeStatsBtn" class="wplace-header-btn" title="${Utils.t('closeStats')}">
+          <button id="closeStatsBtn" class="wplace-header-btn" title="${t('closeStats')}">
             <i class="fas fa-times"></i>
           </button>
         </div>
@@ -2644,7 +2392,7 @@ import { CONFIG } from './config';
         <div class="wplace-stats">
           <div id="statsArea">
             <div class="wplace-stat-item">
-              <div class="wplace-stat-label"><i class="fas fa-info-circle"></i> ${Utils.t('initMessage')}</div>
+              <div class="wplace-stat-label"><i class="fas fa-info-circle"></i> ${t('initMessage')}</div>
             </div>
           </div>
         </div>
@@ -2682,7 +2430,7 @@ import { CONFIG } from './config';
         <div class="wplace-settings-title-wrapper">
           <h3 class="wplace-settings-title">
             <i class="fas fa-cog wplace-settings-icon"></i>
-            ${Utils.t('settings')}
+            ${t('settings')}
           </h3>
           <button id="closeSettingsBtn" class="wplace-settings-close-btn">✕</button>
         </div>
@@ -2718,7 +2466,7 @@ import { CONFIG } from './config';
         <div class="wplace-settings-section">
           <label class="wplace-settings-section-label">
             <i class="fas fa-robot wplace-icon-robot"></i>
-            ${Utils.t('automation')}
+            ${t('automation')}
           </label>
           <!-- Token generator is always enabled - settings moved to Token Source above -->
         </div>
@@ -2780,7 +2528,7 @@ import { CONFIG } from './config';
         <div class="wplace-settings-section">
           <label class="wplace-settings-section-label">
             <i class="fas fa-paint-brush wplace-icon-paint"></i>
-            ${Utils.t('paintOptions')}
+            ${t('paintOptions')}
           </label>
           <!-- Pixel Filter Toggles -->
           <div id="pixelFilterControls" class="wplace-settings-section-wrapper wplace-pixel-filter-controls">
@@ -2788,12 +2536,12 @@ import { CONFIG } from './config';
             <label class="wplace-settings-toggle">
               <div>
                 <span class="wplace-settings-toggle-title" style="color: ${CONFIG.THEME.text || 'white'};">
-                  ${Utils.t('paintWhitePixels')}
+                  ${t('paintWhitePixels')}
                 </span>
                 <p class="wplace-settings-toggle-description" style="color: ${
                     CONFIG.THEME.text ? `${CONFIG.THEME.text}BB` : 'rgba(255,255,255,0.7)'
                 };">
-                  ${Utils.t('paintWhitePixelsDescription')}
+                  ${t('paintWhitePixelsDescription')}
                 </p>
               </div>
               <input type="checkbox" id="settingsPaintWhiteToggle" ${state.paintWhitePixels ? 'checked' : ''} 
@@ -2805,12 +2553,12 @@ import { CONFIG } from './config';
             <label class="wplace-settings-toggle">
               <div>
                 <span class="wplace-settings-toggle-title" style="color: ${CONFIG.THEME.text || 'white'};">
-                  ${Utils.t('paintTransparentPixels')}
+                  ${t('paintTransparentPixels')}
                 </span>
                 <p class="wplace-settings-toggle-description" style="color: ${
                     CONFIG.THEME.text ? `${CONFIG.THEME.text}BB` : 'rgba(255,255,255,0.7)'
                 };">
-                  ${Utils.t('paintTransparentPixelsDescription')}
+                  ${t('paintTransparentPixelsDescription')}
                 </p>
               </div>
               <input type="checkbox" id="settingsPaintTransparentToggle" ${
@@ -2823,10 +2571,10 @@ import { CONFIG } from './config';
               <div>
                 <span class="wplace-settings-toggle-title" style="color: ${
                     CONFIG.THEME.text || 'white'
-                };">${Utils.t('paintUnavailablePixels')}</span>
+                };">${t('paintUnavailablePixels')}</span>
                 <p class="wplace-settings-toggle-description" style="color: ${
                     CONFIG.THEME.text ? `${CONFIG.THEME.text}BB` : 'rgba(255,255,255,0.7)'
-                };">${Utils.t('paintUnavailablePixelsDescription')}</p>
+                };">${t('paintUnavailablePixelsDescription')}</p>
               </div>
               <input type="checkbox" id="paintUnavailablePixelsToggle" ${
                   state.paintUnavailablePixels ? 'checked' : ''
@@ -2841,7 +2589,7 @@ import { CONFIG } from './config';
         <div class="wplace-settings-section">
           <label class="wplace-settings-section-label">
             <i class="fas fa-tachometer-alt wplace-icon-speed"></i>
-            ${Utils.t('paintingSpeed')}
+            ${t('paintingSpeed')}
           </label>
           
           <!-- Batch Mode Selection -->
@@ -2859,7 +2607,7 @@ import { CONFIG } from './config';
           <!-- Normal Mode: Fixed Size Controls -->
           <div id="normalBatchControls" class="wplace-batch-controls wplace-normal-batch-controls">
             <div class="wplace-batch-size-header">
-              <span class="wplace-batch-size-label">${Utils.t('batchSize')}</span>
+              <span class="wplace-batch-size-label">${t('batchSize')}</span>
             </div>
             <div class="wplace-dual-control-compact">
                 <div class="wplace-speed-slider-container-compact">
@@ -2916,7 +2664,7 @@ import { CONFIG } from './config';
             <input type="checkbox" id="enableSpeedToggle" ${
                 CONFIG.PAINTING_SPEED_ENABLED ? 'checked' : ''
             } class="wplace-speed-checkbox"/>
-            <span>${Utils.t('enablePaintingSpeedLimit')}</span>
+            <span>${t('enablePaintingSpeedLimit')}</span>
           </label>
         </div>
         
@@ -3003,7 +2751,7 @@ import { CONFIG } from './config';
 
         <div class="wplace-settings-footer">
              <button id="applySettingsBtn" class="wplace-settings-apply-btn">
-                 <i class="fas fa-check"></i> ${Utils.t('applySettings')}
+                 <i class="fas fa-check"></i> ${t('applySettings')}
           </button>
         </div>
 
@@ -3244,18 +2992,18 @@ import { CONFIG } from './config';
                 if (isVisible) {
                     statsContainer.style.display = 'none';
                     statsBtn.innerHTML = '<i class="fas fa-chart-bar"></i>';
-                    statsBtn.title = Utils.t('showStats');
+                    statsBtn.title = t('showStats');
                 } else {
                     statsContainer.style.display = 'block';
                     statsBtn.innerHTML = '<i class="fas fa-chart-line"></i>';
-                    statsBtn.title = Utils.t('hideStats');
+                    statsBtn.title = t('hideStats');
                 }
             });
 
             closeStatsBtn.addEventListener('click', () => {
                 statsContainer.style.display = 'none';
                 statsBtn.innerHTML = '<i class="fas fa-chart-bar"></i>';
-                statsBtn.title = Utils.t('showStats');
+                statsBtn.title = t('showStats');
             });
 
             if (refreshChargesBtn) {
@@ -3277,7 +3025,7 @@ import { CONFIG } from './config';
         if (statsContainer && statsBtn) {
             // Stats container starts hidden - user clicks button to show
             statsBtn.innerHTML = '<i class="fas fa-chart-bar"></i>';
-            statsBtn.title = Utils.t('showStats');
+            statsBtn.title = t('showStats');
         }
 
         const settingsBtn = container.querySelector('#settingsBtn');
@@ -3336,7 +3084,7 @@ import { CONFIG } from './config';
                 CONFIG.TRANSPARENCY_THRESHOLD = state.customTransparencyThreshold;
                 CONFIG.WHITE_THRESHOLD = state.customWhiteThreshold;
                 saveBotSettings();
-                Utils.showAlert(Utils.t('settingsSaved'), 'success');
+                Utils.showAlert(t('settingsSaved'), 'success');
                 closeSettingsBtn.click();
             });
 
@@ -3353,7 +3101,7 @@ import { CONFIG } from './config';
                         hybrid: 'Generator + Auto Fallback',
                         manual: 'Manual Pixel Placement',
                     };
-                    Utils.showAlert(Utils.t('tokenSourceSet', { source: sourceNames[state.tokenSource] }), 'success');
+                    Utils.showAlert(t('tokenSourceSet', { source: sourceNames[state.tokenSource] }), 'success');
                 });
             }
 
@@ -3382,8 +3130,8 @@ import { CONFIG } from './config';
                     saveBotSettings();
                     console.log(`📦 Batch mode changed to: ${state.batchMode}`);
                     Utils.showAlert(
-                        Utils.t('batchModeSet', {
-                            mode: state.batchMode === 'random' ? Utils.t('randomRange') : Utils.t('normalFixedSize'),
+                        t('batchModeSet', {
+                            mode: state.batchMode === 'random' ? t('randomRange') : t('normalFixedSize'),
                         }),
                         'success'
                     );
@@ -3525,9 +3273,9 @@ import { CONFIG } from './config';
                 enableBlueMarbleToggle.addEventListener('click', async () => {
                     state.blueMarbleEnabled = enableBlueMarbleToggle.checked;
                     if (state.imageLoaded && overlayManager.imageBitmap) {
-                        Utils.showAlert(Utils.t('reprocessingOverlay'), 'info');
+                        Utils.showAlert(t('reprocessingOverlay'), 'info');
                         await overlayManager.processImageIntoChunks();
-                        Utils.showAlert(Utils.t('overlayUpdated'), 'success');
+                        Utils.showAlert(t('overlayUpdated'), 'success');
                     }
                 });
             }
@@ -3623,10 +3371,10 @@ import { CONFIG } from './config';
 
                 if (isCompact) {
                     compactBtn.innerHTML = '<i class="fas fa-expand"></i>';
-                    compactBtn.title = Utils.t('expandMode');
+                    compactBtn.title = t('expandMode');
                 } else {
                     compactBtn.innerHTML = '<i class="fas fa-compress"></i>';
-                    compactBtn.title = Utils.t('compactMode');
+                    compactBtn.title = t('compactMode');
                 }
             });
         }
@@ -3638,12 +3386,12 @@ import { CONFIG } from './config';
                     container.classList.add('wplace-minimized');
                     content.classList.add('wplace-hidden');
                     minimizeBtn.innerHTML = '<i class="fas fa-expand"></i>';
-                    minimizeBtn.title = Utils.t('restore');
+                    minimizeBtn.title = t('restore');
                 } else {
                     container.classList.remove('wplace-minimized');
                     content.classList.remove('wplace-hidden');
                     minimizeBtn.innerHTML = '<i class="fas fa-minus"></i>';
-                    minimizeBtn.title = Utils.t('minimize');
+                    minimizeBtn.title = t('minimize');
                 }
                 saveBotSettings();
             });
@@ -3654,7 +3402,7 @@ import { CONFIG } from './config';
                 const isEnabled = overlayManager.toggle();
                 toggleOverlayBtn.classList.toggle('active', isEnabled);
                 toggleOverlayBtn.setAttribute('aria-pressed', isEnabled ? 'true' : 'false');
-                Utils.showAlert(isEnabled ? Utils.t('overlayEnabled') : Utils.t('overlayDisabled'), 'info');
+                Utils.showAlert(isEnabled ? t('overlayEnabled') : t('overlayDisabled'), 'info');
             });
         }
 
@@ -3663,30 +3411,30 @@ import { CONFIG } from './config';
             content.classList.add('wplace-hidden');
             if (minimizeBtn) {
                 minimizeBtn.innerHTML = '<i class="fas fa-expand"></i>';
-                minimizeBtn.title = Utils.t('restore');
+                minimizeBtn.title = t('restore');
             }
         } else {
             container.classList.remove('wplace-minimized');
             content.classList.remove('wplace-hidden');
             if (minimizeBtn) {
                 minimizeBtn.innerHTML = '<i class="fas fa-minus"></i>';
-                minimizeBtn.title = Utils.t('minimize');
+                minimizeBtn.title = t('minimize');
             }
         }
 
         if (saveBtn) {
             saveBtn.addEventListener('click', () => {
                 if (!state.imageLoaded) {
-                    Utils.showAlert(Utils.t('missingRequirements'), 'error');
+                    Utils.showAlert(t('missingRequirements'), 'error');
                     return;
                 }
 
                 const success = Utils.saveProgress();
                 if (success) {
                     updateUI('autoSaved', 'success');
-                    Utils.showAlert(Utils.t('autoSaved'), 'success');
+                    Utils.showAlert(t('autoSaved'), 'success');
                 } else {
-                    Utils.showAlert(Utils.t('errorSavingProgress'), 'error');
+                    Utils.showAlert(t('errorSavingProgress'), 'error');
                 }
             });
         }
@@ -3695,19 +3443,19 @@ import { CONFIG } from './config';
             loadBtn.addEventListener('click', () => {
                 // Check if initial setup is complete
                 if (!state.initialSetupComplete) {
-                    Utils.showAlert(Utils.t('pleaseWaitInitialSetup'), 'warning');
+                    Utils.showAlert(t('pleaseWaitInitialSetup'), 'warning');
                     return;
                 }
 
                 const savedData = Utils.loadProgress();
                 if (!savedData) {
                     updateUI('noSavedData', 'warning');
-                    Utils.showAlert(Utils.t('noSavedData'), 'warning');
+                    Utils.showAlert(t('noSavedData'), 'warning');
                     return;
                 }
 
                 const confirmLoad = confirm(
-                    `${Utils.t('savedDataFound')}\n\n` +
+                    `${t('savedDataFound')}\n\n` +
                         `Saved: ${new Date(savedData.timestamp).toLocaleString()}\n` +
                         `Progress: ${savedData.state.paintedPixels}/${savedData.state.totalPixels} pixels`
                 );
@@ -3716,7 +3464,7 @@ import { CONFIG } from './config';
                     const success = Utils.restoreProgress(savedData);
                     if (success) {
                         updateUI('dataLoaded', 'success');
-                        Utils.showAlert(Utils.t('dataLoaded'), 'success');
+                        Utils.showAlert(t('dataLoaded'), 'success');
                         updateDataButtons();
 
                         updateStats();
@@ -3737,14 +3485,14 @@ import { CONFIG } from './config';
                             startBtn.disabled = false;
                         }
                     } else {
-                        Utils.showAlert(Utils.t('errorLoadingProgress'), 'error');
+                        Utils.showAlert(t('errorLoadingProgress'), 'error');
                     }
                 }
             });
         }
 
         updateUI = (messageKey, type = 'default', params = {}, silent = false) => {
-            const message = Utils.t(messageKey, params);
+            const message = t(messageKey, params);
             statusText.textContent = message;
             statusText.className = `wplace-status status-${type}`;
 
@@ -3863,15 +3611,15 @@ import { CONFIG } from './config';
 
                 imageStatsHTML = `
           <div class="wplace-stat-item">
-            <div class="wplace-stat-label"><i class="fas fa-image"></i> ${Utils.t('progress')}</div>
+            <div class="wplace-stat-label"><i class="fas fa-image"></i> ${t('progress')}</div>
             <div class="wplace-stat-value">${progress}%</div>
           </div>
           <div class="wplace-stat-item">
-            <div class="wplace-stat-label"><i class="fas fa-paint-brush"></i> ${Utils.t('pixels')}</div>
+            <div class="wplace-stat-label"><i class="fas fa-paint-brush"></i> ${t('pixels')}</div>
             <div class="wplace-stat-value">${state.paintedPixels}/${state.totalPixels}</div>
           </div>
           <div class="wplace-stat-item">
-            <div class="wplace-stat-label"><i class="fas fa-clock"></i> ${Utils.t('estimatedTime')}</div>
+            <div class="wplace-stat-label"><i class="fas fa-clock"></i> ${t('estimatedTime')}</div>
             <div class="wplace-stat-value">${Utils.formatTime(state.estimatedTime)}</div>
           </div>
         `;
@@ -3886,12 +3634,12 @@ import { CONFIG } from './config';
             const newCount = Array.isArray(availableColors) ? availableColors.length : 0;
 
             if (newCount === 0 && isManualRefresh) {
-                Utils.showAlert(Utils.t('noColorsFound'), 'warning');
+                Utils.showAlert(t('noColorsFound'), 'warning');
             } else if (newCount > 0 && state.availableColors.length < newCount) {
                 const oldCount = state.availableColors.length;
 
                 Utils.showAlert(
-                    Utils.t('colorsUpdated', {
+                    t('colorsUpdated', {
                         oldCount,
                         newCount: newCount,
                         diffCount: newCount - oldCount,
@@ -3904,7 +3652,7 @@ import { CONFIG } from './config';
                 colorSwatchesHTML = state.availableColors
                     .map((color) => {
                         const rgbString = `rgb(${color.rgb.join(',')})`;
-                        return `<div class="wplace-stat-color-swatch" style="background-color: ${rgbString};" title="${Utils.t(
+                        return `<div class="wplace-stat-color-swatch" style="background-color: ${rgbString};" title="${t(
                             'colorTooltip',
                             { id: color.id, rgb: color.rgb.join(', ') }
                         )}"></div>`;
@@ -3916,7 +3664,7 @@ import { CONFIG } from './config';
             ${imageStatsHTML}
             <div class="wplace-stat-item">
               <div class="wplace-stat-label">
-                <i class="fas fa-bolt"></i> ${Utils.t('charges')}
+                <i class="fas fa-bolt"></i> ${t('charges')}
               </div>
               <div class="wplace-stat-value" id="wplace-stat-charges-value">
                 ${state.displayCharges} / ${state.maxCharges}
@@ -3924,7 +3672,7 @@ import { CONFIG } from './config';
             </div>
             <div class="wplace-stat-item">
               <div class="wplace-stat-label">
-                <i class="fas fa-battery-half"></i> ${Utils.t('fullChargeIn')}
+                <i class="fas fa-battery-half"></i> ${t('fullChargeIn')}
               </div>
               <div class="wplace-stat-value" id="wplace-stat-fullcharge-value">--:--:--</div>
             </div>
@@ -3932,7 +3680,7 @@ import { CONFIG } from './config';
                 state.colorsChecked
                     ? `
             <div class="wplace-colors-section">
-                <div class="wplace-stat-label"><i class="fas fa-palette"></i> ${Utils.t('availableColors', {
+                <div class="wplace-stat-label"><i class="fas fa-palette"></i> ${t('availableColors', {
                     count: state.availableColors.length,
                 })}</div>
                 <div class="wplace-stat-colors-grid">
@@ -3960,7 +3708,7 @@ import { CONFIG } from './config';
                 const availableColors = Utils.extractAvailableColors();
                 if (availableColors === null || availableColors.length < 10) {
                     updateUI('noColorsFound', 'error');
-                    Utils.showAlert(Utils.t('noColorsFound'), 'error');
+                    Utils.showAlert(t('noColorsFound'), 'error');
                     return;
                 }
 
@@ -4036,7 +3784,8 @@ import { CONFIG } from './config';
                     updateStats();
                     updateDataButtons();
                     updateUI('imageLoaded', 'success', { count: totalValidPixels });
-                } catch {
+                } catch (error) {
+                    console.error('Error processing image:', error);
                     updateUI('imageError', 'error');
                 }
             });
@@ -4051,7 +3800,7 @@ import { CONFIG } from './config';
                 state.region = null;
                 startBtn.disabled = true;
 
-                Utils.showAlert(Utils.t('selectPositionAlert'), 'info');
+                Utils.showAlert(t('selectPositionAlert'), 'info');
                 updateUI('waitingPosition', 'default');
 
                 const tempFetch = async (url, options) => {
@@ -4110,7 +3859,7 @@ import { CONFIG } from './config';
                         window.fetch = originalFetch;
                         state.selectingPosition = false;
                         updateUI('positionTimeout', 'error');
-                        Utils.showAlert(Utils.t('positionTimeout'), 'error');
+                        Utils.showAlert(t('positionTimeout'), 'error');
                     }
                 }, 120000);
             });
@@ -4169,7 +3918,7 @@ import { CONFIG } from './config';
 
                 if (state.imageLoaded && state.paintedPixels > 0) {
                     Utils.saveProgress();
-                    Utils.showAlert(Utils.t('autoSaved'), 'success');
+                    Utils.showAlert(t('autoSaved'), 'success');
                 }
             });
         }
@@ -4181,10 +3930,10 @@ import { CONFIG } from './config';
                 const progress = Math.round((savedData.state.paintedPixels / savedData.state.totalPixels) * 100);
 
                 Utils.showAlert(
-                    `${Utils.t('savedDataFound')}\n\n` +
+                    `${t('savedDataFound')}\n\n` +
                         `Saved: ${savedDate}\n` +
                         `Progress: ${savedData.state.paintedPixels}/${savedData.state.totalPixels} pixels (${progress}%)\n` +
-                        `${Utils.t('clickLoadToContinue')}`,
+                        `${t('clickLoadToContinue')}`,
                     'info'
                 );
             }
@@ -4200,7 +3949,7 @@ import { CONFIG } from './config';
                 // Update both controls (value shows in input, label shows unit only)
                 cooldownSlider.value = threshold;
                 cooldownInput.value = threshold;
-                cooldownValue.textContent = `${Utils.t('charges')}`;
+                cooldownValue.textContent = `${t('charges')}`;
 
                 saveBotSettings();
             };
@@ -5074,7 +4823,7 @@ import { CONFIG } from './config';
             const cooldownValue = document.getElementById('cooldownValue');
             if (cooldownSlider) cooldownSlider.value = state.cooldownChargeThreshold;
             if (cooldownInput) cooldownInput.value = state.cooldownChargeThreshold;
-            if (cooldownValue) cooldownValue.textContent = `${Utils.t('charges')}`;
+            if (cooldownValue) cooldownValue.textContent = `${t('charges')}`;
 
             const overlayOpacitySlider = document.getElementById('overlayOpacitySlider');
             if (overlayOpacitySlider) overlayOpacitySlider.value = state.overlayOpacity;
@@ -5139,7 +4888,7 @@ import { CONFIG } from './config';
         }
 
         // Show a notification that file operations are now available
-        Utils.showAlert(Utils.t('fileOperationsAvailable'), 'success');
+        Utils.showAlert(t('fileOperationsAvailable'), 'success');
     }
 
     // Optimized token initialization with better timing and error handling
@@ -5165,7 +4914,7 @@ import { CONFIG } from './config';
                 setTurnstileToken(token);
                 console.log('✅ Startup token generated successfully');
                 updateUI('tokenReady', 'success');
-                Utils.showAlert(Utils.t('tokenGeneratorReady'), 'success');
+                Utils.showAlert(t('tokenGeneratorReady'), 'success');
                 enableProgressDataOperations(); // Enable file operations since initial setup is complete
             } else {
                 console.warn('⚠️ Startup token generation failed (no token received), will retry when needed');
@@ -5185,7 +4934,7 @@ import { CONFIG } from './config';
     }
 
     // Load theme preference immediately on startup before creating UI
-    applyTheme();
+    ThemeManager.applyTheme();
 
     createUI().then(() => {
         // Generate token automatically after UI is ready
