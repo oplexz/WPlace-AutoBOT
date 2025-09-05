@@ -731,7 +731,7 @@ import { translationManager, t } from './translations.js';
         if (source === 'turnstile-capture' && token) {
             setTurnstileToken(token);
             if (document.querySelector('#statusText')?.textContent.includes('CAPTCHA')) {
-                Utils.showAlert(t('tokenCapturedSuccess'), 'success');
+                Utils.showAlert('Token captured successfully! You can start the bot now.', 'success');
                 updateUI('colorsFound', 'success', { count: state.availableColors.length });
             }
         }
@@ -903,7 +903,7 @@ import { translationManager, t } from './translations.js';
             overlay.className = 'wplace-turnstile-overlay wplace-overlay-hidden';
 
             const title = document.createElement('div');
-            title.textContent = t('turnstileInstructions');
+            title.textContent = 'Cloudflare Turnstile — please complete the check if shown';
             title.className = 'wplace-turnstile-title';
 
             const host = document.createElement('div');
@@ -911,7 +911,7 @@ import { translationManager, t } from './translations.js';
             host.className = 'wplace-turnstile-host';
 
             const hideBtn = document.createElement('button');
-            hideBtn.textContent = t('hideTurnstileBtn');
+            hideBtn.textContent = 'Hide';
             hideBtn.className = 'wplace-turnstile-hide-btn';
             hideBtn.addEventListener('click', () => overlay.remove());
 
@@ -2992,18 +2992,18 @@ import { translationManager, t } from './translations.js';
                 if (isVisible) {
                     statsContainer.style.display = 'none';
                     statsBtn.innerHTML = '<i class="fas fa-chart-bar"></i>';
-                    statsBtn.title = t('showStats');
+                    statsBtn.title = 'Show Stats';
                 } else {
                     statsContainer.style.display = 'block';
                     statsBtn.innerHTML = '<i class="fas fa-chart-line"></i>';
-                    statsBtn.title = t('hideStats');
+                    statsBtn.title = 'Hide Stats';
                 }
             });
 
             closeStatsBtn.addEventListener('click', () => {
                 statsContainer.style.display = 'none';
                 statsBtn.innerHTML = '<i class="fas fa-chart-bar"></i>';
-                statsBtn.title = t('showStats');
+                statsBtn.title = 'Show Stats';
             });
 
             if (refreshChargesBtn) {
@@ -3025,7 +3025,7 @@ import { translationManager, t } from './translations.js';
         if (statsContainer && statsBtn) {
             // Stats container starts hidden - user clicks button to show
             statsBtn.innerHTML = '<i class="fas fa-chart-bar"></i>';
-            statsBtn.title = t('showStats');
+            statsBtn.title = 'Show Stats';
         }
 
         const settingsBtn = container.querySelector('#settingsBtn');
@@ -3084,7 +3084,7 @@ import { translationManager, t } from './translations.js';
                 CONFIG.TRANSPARENCY_THRESHOLD = state.customTransparencyThreshold;
                 CONFIG.WHITE_THRESHOLD = state.customWhiteThreshold;
                 saveBotSettings();
-                Utils.showAlert(t('settingsSaved'), 'success');
+                Utils.showAlert('✅ Settings saved successfully!', 'success');
                 closeSettingsBtn.click();
             });
 
@@ -3101,7 +3101,7 @@ import { translationManager, t } from './translations.js';
                         hybrid: 'Generator + Auto Fallback',
                         manual: 'Manual Pixel Placement',
                     };
-                    Utils.showAlert(t('tokenSourceSet', { source: sourceNames[state.tokenSource] }), 'success');
+                    Utils.showAlert(`Token source set to: ${sourceNames[state.tokenSource]}`, 'success');
                 });
             }
 
@@ -3130,9 +3130,7 @@ import { translationManager, t } from './translations.js';
                     saveBotSettings();
                     console.log(`📦 Batch mode changed to: ${state.batchMode}`);
                     Utils.showAlert(
-                        t('batchModeSet', {
-                            mode: state.batchMode === 'random' ? t('randomRange') : t('normalFixedSize'),
-                        }),
+                        `Batch mode set to: ${state.batchMode === 'random' ? 'Random Range' : 'Normal Fixed Size'}`,
                         'success'
                     );
                 });
@@ -3273,9 +3271,9 @@ import { translationManager, t } from './translations.js';
                 enableBlueMarbleToggle.addEventListener('click', async () => {
                     state.blueMarbleEnabled = enableBlueMarbleToggle.checked;
                     if (state.imageLoaded && overlayManager.imageBitmap) {
-                        Utils.showAlert(t('reprocessingOverlay'), 'info');
+                        Utils.showAlert('Re-processing overlay...', 'info');
                         await overlayManager.processImageIntoChunks();
-                        Utils.showAlert(t('overlayUpdated'), 'success');
+                        Utils.showAlert('Overlay updated!', 'success');
                     }
                 });
             }
@@ -3371,10 +3369,10 @@ import { translationManager, t } from './translations.js';
 
                 if (isCompact) {
                     compactBtn.innerHTML = '<i class="fas fa-expand"></i>';
-                    compactBtn.title = t('expandMode');
+                    compactBtn.title = 'Expand Mode';
                 } else {
                     compactBtn.innerHTML = '<i class="fas fa-compress"></i>';
-                    compactBtn.title = t('compactMode');
+                    compactBtn.title = 'Compact Mode';
                 }
             });
         }
@@ -3386,12 +3384,12 @@ import { translationManager, t } from './translations.js';
                     container.classList.add('wplace-minimized');
                     content.classList.add('wplace-hidden');
                     minimizeBtn.innerHTML = '<i class="fas fa-expand"></i>';
-                    minimizeBtn.title = t('restore');
+                    minimizeBtn.title = 'Restore';
                 } else {
                     container.classList.remove('wplace-minimized');
                     content.classList.remove('wplace-hidden');
                     minimizeBtn.innerHTML = '<i class="fas fa-minus"></i>';
-                    minimizeBtn.title = t('minimize');
+                    minimizeBtn.title = 'Minimize';
                 }
                 saveBotSettings();
             });
@@ -3402,7 +3400,7 @@ import { translationManager, t } from './translations.js';
                 const isEnabled = overlayManager.toggle();
                 toggleOverlayBtn.classList.toggle('active', isEnabled);
                 toggleOverlayBtn.setAttribute('aria-pressed', isEnabled ? 'true' : 'false');
-                Utils.showAlert(isEnabled ? t('overlayEnabled') : t('overlayDisabled'), 'info');
+                Utils.showAlert(isEnabled ? 'Overlay enabled.' : 'Overlay disabled.', 'info');
             });
         }
 
@@ -3411,30 +3409,30 @@ import { translationManager, t } from './translations.js';
             content.classList.add('wplace-hidden');
             if (minimizeBtn) {
                 minimizeBtn.innerHTML = '<i class="fas fa-expand"></i>';
-                minimizeBtn.title = t('restore');
+                minimizeBtn.title = 'Restore';
             }
         } else {
             container.classList.remove('wplace-minimized');
             content.classList.remove('wplace-hidden');
             if (minimizeBtn) {
                 minimizeBtn.innerHTML = '<i class="fas fa-minus"></i>';
-                minimizeBtn.title = t('minimize');
+                minimizeBtn.title = 'Minimize';
             }
         }
 
         if (saveBtn) {
             saveBtn.addEventListener('click', () => {
                 if (!state.imageLoaded) {
-                    Utils.showAlert(t('missingRequirements'), 'error');
+                    Utils.showAlert('❌ Load an image and select a position first', 'error');
                     return;
                 }
 
                 const success = Utils.saveProgress();
                 if (success) {
                     updateUI('autoSaved', 'success');
-                    Utils.showAlert(t('autoSaved'), 'success');
+                    Utils.showAlert('✅ Progress saved automatically', 'success');
                 } else {
-                    Utils.showAlert(t('errorSavingProgress'), 'error');
+                    Utils.showAlert('❌ Error saving progress', 'error');
                 }
             });
         }
@@ -3443,14 +3441,17 @@ import { translationManager, t } from './translations.js';
             loadBtn.addEventListener('click', () => {
                 // Check if initial setup is complete
                 if (!state.initialSetupComplete) {
-                    Utils.showAlert(t('pleaseWaitInitialSetup'), 'warning');
+                    Utils.showAlert(
+                        '🔄 Please wait for the initial setup to complete before loading progress.',
+                        'warning'
+                    );
                     return;
                 }
 
                 const savedData = Utils.loadProgress();
                 if (!savedData) {
                     updateUI('noSavedData', 'warning');
-                    Utils.showAlert(t('noSavedData'), 'warning');
+                    Utils.showAlert('❌ No saved progress found', 'warning');
                     return;
                 }
 
@@ -3464,7 +3465,7 @@ import { translationManager, t } from './translations.js';
                     const success = Utils.restoreProgress(savedData);
                     if (success) {
                         updateUI('dataLoaded', 'success');
-                        Utils.showAlert(t('dataLoaded'), 'success');
+                        Utils.showAlert('✅ Progress loaded successfully', 'success');
                         updateDataButtons();
 
                         updateStats();
@@ -3485,7 +3486,7 @@ import { translationManager, t } from './translations.js';
                             startBtn.disabled = false;
                         }
                     } else {
-                        Utils.showAlert(t('errorLoadingProgress'), 'error');
+                        Utils.showAlert('❌ Error loading progress', 'error');
                     }
                 }
             });
@@ -3634,16 +3635,15 @@ import { translationManager, t } from './translations.js';
             const newCount = Array.isArray(availableColors) ? availableColors.length : 0;
 
             if (newCount === 0 && isManualRefresh) {
-                Utils.showAlert(t('noColorsFound'), 'warning');
+                Utils.showAlert(
+                    '❌ To update the color swatch, open the color palette on the site and try again!',
+                    'warning'
+                );
             } else if (newCount > 0 && state.availableColors.length < newCount) {
                 const oldCount = state.availableColors.length;
 
                 Utils.showAlert(
-                    t('colorsUpdated', {
-                        oldCount,
-                        newCount: newCount,
-                        diffCount: newCount - oldCount,
-                    }),
+                    `Available colors increased: ${oldCount} -> ${newCount}, ${newCount - oldCount} new colors found`,
                     'success'
                 );
                 state.availableColors = availableColors;
@@ -3652,10 +3652,7 @@ import { translationManager, t } from './translations.js';
                 colorSwatchesHTML = state.availableColors
                     .map((color) => {
                         const rgbString = `rgb(${color.rgb.join(',')})`;
-                        return `<div class="wplace-stat-color-swatch" style="background-color: ${rgbString};" title="${t(
-                            'colorTooltip',
-                            { id: color.id, rgb: color.rgb.join(', ') }
-                        )}"></div>`;
+                        return `<div class="wplace-stat-color-swatch" style="background-color: ${rgbString};" title="ID: ${color.id}\nRGB: ${color.rgb.join(', ')}"></div>`;
                     })
                     .join('');
             }
@@ -3680,9 +3677,7 @@ import { translationManager, t } from './translations.js';
                 state.colorsChecked
                     ? `
             <div class="wplace-colors-section">
-                <div class="wplace-stat-label"><i class="fas fa-palette"></i> ${t('availableColors', {
-                    count: state.availableColors.length,
-                })}</div>
+                <div class="wplace-stat-label"><i class="fas fa-palette"></i> Available Colors: ${state.availableColors.length}</div>
                 <div class="wplace-stat-colors-grid">
                     ${colorSwatchesHTML}
                 </div>
@@ -3708,7 +3703,10 @@ import { translationManager, t } from './translations.js';
                 const availableColors = Utils.extractAvailableColors();
                 if (availableColors === null || availableColors.length < 10) {
                     updateUI('noColorsFound', 'error');
-                    Utils.showAlert(t('noColorsFound'), 'error');
+                    Utils.showAlert(
+                        '❌ To update the color swatch, open the color palette on the site and try again!',
+                        'error'
+                    );
                     return;
                 }
 
@@ -3800,7 +3798,7 @@ import { translationManager, t } from './translations.js';
                 state.region = null;
                 startBtn.disabled = true;
 
-                Utils.showAlert(t('selectPositionAlert'), 'info');
+                Utils.showAlert('Paint the first pixel at the location where you want the art to start!', 'info');
                 updateUI('waitingPosition', 'default');
 
                 const tempFetch = async (url, options) => {
@@ -3859,7 +3857,7 @@ import { translationManager, t } from './translations.js';
                         window.fetch = originalFetch;
                         state.selectingPosition = false;
                         updateUI('positionTimeout', 'error');
-                        Utils.showAlert(t('positionTimeout'), 'error');
+                        Utils.showAlert('❌ Timeout for position selection', 'error');
                     }
                 }, 120000);
             });
@@ -3918,7 +3916,7 @@ import { translationManager, t } from './translations.js';
 
                 if (state.imageLoaded && state.paintedPixels > 0) {
                     Utils.saveProgress();
-                    Utils.showAlert(t('autoSaved'), 'success');
+                    Utils.showAlert('✅ Progress saved automatically', 'success');
                 }
             });
         }
@@ -4888,7 +4886,7 @@ import { translationManager, t } from './translations.js';
         }
 
         // Show a notification that file operations are now available
-        Utils.showAlert(t('fileOperationsAvailable'), 'success');
+        Utils.showAlert('📂 File operations (Load/Upload) are now available!', 'success');
     }
 
     // Optimized token initialization with better timing and error handling
@@ -4914,7 +4912,7 @@ import { translationManager, t } from './translations.js';
                 setTurnstileToken(token);
                 console.log('✅ Startup token generated successfully');
                 updateUI('tokenReady', 'success');
-                Utils.showAlert(t('tokenGeneratorReady'), 'success');
+                Utils.showAlert('🔑 Token generator ready!', 'success');
                 enableProgressDataOperations(); // Enable file operations since initial setup is complete
             } else {
                 console.warn('⚠️ Startup token generation failed (no token received), will retry when needed');
