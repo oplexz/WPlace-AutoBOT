@@ -1,3 +1,4 @@
+/* cSpell:disable */
 // eslint-disable-next-line prettier/prettier
 (async () => {
   // CONFIGURATION CONSTANTS
