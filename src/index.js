@@ -2257,19 +2257,19 @@ import { translationManager, t } from './translations.js';
       <div class="wplace-header">
         <div class="wplace-header-title">
           <i class="fas fa-image"></i>
-          <span>${t('title')}</span>
+          <span>Auto-Image</span>
         </div>
         <div class="wplace-header-controls">
-          <button id="settingsBtn" class="wplace-header-btn" title="${t('settings')}">
+          <button id="settingsBtn" class="wplace-header-btn" title="Settings">
             <i class="fas fa-cog"></i>
           </button>
-          <button id="statsBtn" class="wplace-header-btn" title="${t('showStats')}">
+          <button id="statsBtn" class="wplace-header-btn" title="Show Stats">
             <i class="fas fa-chart-bar"></i>
           </button>
-          <button id="compactBtn" class="wplace-header-btn" title="${t('compactMode')}">
+          <button id="compactBtn" class="wplace-header-btn" title="Compact Mode">
             <i class="fas fa-compress"></i>
           </button>
-          <button id="minimizeBtn" class="wplace-header-btn" title="${t('minimize')}">
+          <button id="minimizeBtn" class="wplace-header-btn" title="Minimize">
             <i class="fas fa-minus"></i>
           </button>
         </div>
@@ -2278,7 +2278,7 @@ import { translationManager, t } from './translations.js';
         <!-- Status Section - Always visible -->
         <div class="wplace-status-section">
           <div id="statusText" class="wplace-status status-default">
-            ${t('initMessage')}
+            Click 'Upload Image' to begin
           </div>
           <div class="wplace-progress">
             <div id="progressBar" class="wplace-progress-bar" style="width: 0%"></div>
@@ -2290,15 +2290,15 @@ import { translationManager, t } from './translations.js';
           <div class="wplace-section-title">🖼️ Image Management</div>
           <div class="wplace-controls">
             <div class="wplace-row">
-              <button id="uploadBtn" class="wplace-btn wplace-btn-upload" disabled title="${t('waitingSetupComplete')}">
+              <button id="uploadBtn" class="wplace-btn wplace-btn-upload" disabled title="🔄 Waiting for initial setup to complete...">
                 <i class="fas fa-upload"></i>
-                <span>${t('uploadImage')}</span>
+                <span>Upload</span>
               </button>
             </div>
             <div class="wplace-row single">
               <button id="selectPosBtn" class="wplace-btn wplace-btn-select" disabled>
                 <i class="fas fa-crosshairs"></i>
-                <span>${t('selectPosition')}</span>
+                <span>Select Position</span>
               </button>
             </div>
           </div>
@@ -2311,17 +2311,17 @@ import { translationManager, t } from './translations.js';
             <div class="wplace-row">
               <button id="startBtn" class="wplace-btn wplace-btn-start" disabled>
                 <i class="fas fa-play"></i>
-                <span>${t('startPainting')}</span>
+                <span>Start</span>
               </button>
               <button id="stopBtn" class="wplace-btn wplace-btn-stop" disabled>
                 <i class="fas fa-stop"></i>
-                <span>${t('stopPainting')}</span>
+                <span>Stop</span>
               </button>
             </div>
             <div class="wplace-row single">
                 <button id="toggleOverlayBtn" class="wplace-btn wplace-btn-overlay" disabled>
                     <i class="fas fa-eye"></i>
-                    <span>${t('toggleOverlay')}</span>
+                    <span>Toggle Overlay</span>
                 </button>
             </div>
           </div>
@@ -2329,9 +2329,9 @@ import { translationManager, t } from './translations.js';
 
         <!-- Cooldown Section -->
         <div class="wplace-section">
-            <div class="wplace-section-title">⏱️ ${t('cooldownSettings')}</div>
+            <div class="wplace-section-title">⏱️ Cooldown Settings</div>
             <div class="wplace-cooldown-control">
-                <label id="cooldownLabel">${t('waitCharges')}:</label>
+                <label id="cooldownLabel">Wait until charges reach:</label>
                 <div class="wplace-dual-control-compact">
                     <div class="wplace-slider-container-compact">
                         <input type="range" id="cooldownSlider" class="wplace-slider" min="1" max="1" value="${
@@ -2344,7 +2344,7 @@ import { translationManager, t } from './translations.js';
                             state.cooldownChargeThreshold
                         }">
                         <button id="cooldownIncrease" class="wplace-input-btn-compact" type="button">+</button>
-                        <span id="cooldownValue" class="wplace-input-label-compact">${t('charges')}</span>
+                        <span id="cooldownValue" class="wplace-input-label-compact">Charges</span>
                     </div>
                 </div>
             </div>
@@ -2357,11 +2357,11 @@ import { translationManager, t } from './translations.js';
             <div class="wplace-row">
               <button id="saveBtn" class="wplace-btn wplace-btn-primary" disabled>
                 <i class="fas fa-save"></i>
-                <span>${t('saveData')}</span>
+                <span>Save Progress</span>
               </button>
-              <button id="loadBtn" class="wplace-btn wplace-btn-primary" disabled title="${t('waitingTokenGenerator')}">
+              <button id="loadBtn" class="wplace-btn wplace-btn-primary" disabled title="🔄 Waiting for token generator to initialize...">
                 <i class="fas fa-folder-open"></i>
-                <span>${t('loadData')}</span>
+                <span>Load Progress</span>
               </button>
             </div>
           </div>
@@ -2377,13 +2377,13 @@ import { translationManager, t } from './translations.js';
       <div class="wplace-header">
         <div class="wplace-header-title">
           <i class="fas fa-chart-bar"></i>
-          <span>${t('paintingStats')}</span>
+          <span>Painting Stats</span>
         </div>
         <div class="wplace-header-controls">
-          <button id="refreshChargesBtn" class="wplace-header-btn" title="${t('refreshCharges')}">
+          <button id="refreshChargesBtn" class="wplace-header-btn" title="Refresh Charges">
             <i class="fas fa-sync"></i>
           </button>
-          <button id="closeStatsBtn" class="wplace-header-btn" title="${t('closeStats')}">
+          <button id="closeStatsBtn" class="wplace-header-btn" title="Close Stats">
             <i class="fas fa-times"></i>
           </button>
         </div>
@@ -2392,7 +2392,7 @@ import { translationManager, t } from './translations.js';
         <div class="wplace-stats">
           <div id="statsArea">
             <div class="wplace-stat-item">
-              <div class="wplace-stat-label"><i class="fas fa-info-circle"></i> ${t('initMessage')}</div>
+              <div class="wplace-stat-label"><i class="fas fa-info-circle"></i> Click 'Upload Image' to begin</div>
             </div>
           </div>
         </div>
@@ -2430,7 +2430,7 @@ import { translationManager, t } from './translations.js';
         <div class="wplace-settings-title-wrapper">
           <h3 class="wplace-settings-title">
             <i class="fas fa-cog wplace-settings-icon"></i>
-            ${t('settings')}
+            Settings
           </h3>
           <button id="closeSettingsBtn" class="wplace-settings-close-btn">✕</button>
         </div>
@@ -2466,7 +2466,7 @@ import { translationManager, t } from './translations.js';
         <div class="wplace-settings-section">
           <label class="wplace-settings-section-label">
             <i class="fas fa-robot wplace-icon-robot"></i>
-            ${t('automation')}
+            Automation
           </label>
           <!-- Token generator is always enabled - settings moved to Token Source above -->
         </div>
@@ -2528,7 +2528,7 @@ import { translationManager, t } from './translations.js';
         <div class="wplace-settings-section">
           <label class="wplace-settings-section-label">
             <i class="fas fa-paint-brush wplace-icon-paint"></i>
-            ${t('paintOptions')}
+            Paint Options
           </label>
           <!-- Pixel Filter Toggles -->
           <div id="pixelFilterControls" class="wplace-settings-section-wrapper wplace-pixel-filter-controls">
@@ -2536,12 +2536,12 @@ import { translationManager, t } from './translations.js';
             <label class="wplace-settings-toggle">
               <div>
                 <span class="wplace-settings-toggle-title" style="color: ${CONFIG.THEME.text || 'white'};">
-                  ${t('paintWhitePixels')}
+                  Paint White
                 </span>
                 <p class="wplace-settings-toggle-description" style="color: ${
                     CONFIG.THEME.text ? `${CONFIG.THEME.text}BB` : 'rgba(255,255,255,0.7)'
                 };">
-                  ${t('paintWhitePixelsDescription')}
+                  If enabled, template white pixels will be painted.
                 </p>
               </div>
               <input type="checkbox" id="settingsPaintWhiteToggle" ${state.paintWhitePixels ? 'checked' : ''} 
@@ -2553,12 +2553,12 @@ import { translationManager, t } from './translations.js';
             <label class="wplace-settings-toggle">
               <div>
                 <span class="wplace-settings-toggle-title" style="color: ${CONFIG.THEME.text || 'white'};">
-                  ${t('paintTransparentPixels')}
+                  Paint Transparent
                 </span>
                 <p class="wplace-settings-toggle-description" style="color: ${
                     CONFIG.THEME.text ? `${CONFIG.THEME.text}BB` : 'rgba(255,255,255,0.7)'
                 };">
-                  ${t('paintTransparentPixelsDescription')}
+                  If enabled, template transparent pixels will be painted
                 </p>
               </div>
               <input type="checkbox" id="settingsPaintTransparentToggle" ${
@@ -2571,10 +2571,10 @@ import { translationManager, t } from './translations.js';
               <div>
                 <span class="wplace-settings-toggle-title" style="color: ${
                     CONFIG.THEME.text || 'white'
-                };">${t('paintUnavailablePixels')}</span>
+                };">Paint Unavailable</span>
                 <p class="wplace-settings-toggle-description" style="color: ${
                     CONFIG.THEME.text ? `${CONFIG.THEME.text}BB` : 'rgba(255,255,255,0.7)'
-                };">${t('paintUnavailablePixelsDescription')}</p>
+                };">If enabled, template colors that are unavailable will be painted using the closest available color</p>
               </div>
               <input type="checkbox" id="paintUnavailablePixelsToggle" ${
                   state.paintUnavailablePixels ? 'checked' : ''
@@ -2589,7 +2589,7 @@ import { translationManager, t } from './translations.js';
         <div class="wplace-settings-section">
           <label class="wplace-settings-section-label">
             <i class="fas fa-tachometer-alt wplace-icon-speed"></i>
-            ${t('paintingSpeed')}
+            Painting Speed
           </label>
           
           <!-- Batch Mode Selection -->
@@ -2607,7 +2607,7 @@ import { translationManager, t } from './translations.js';
           <!-- Normal Mode: Fixed Size Controls -->
           <div id="normalBatchControls" class="wplace-batch-controls wplace-normal-batch-controls">
             <div class="wplace-batch-size-header">
-              <span class="wplace-batch-size-label">${t('batchSize')}</span>
+              <span class="wplace-batch-size-label">Batch size</span>
             </div>
             <div class="wplace-dual-control-compact">
                 <div class="wplace-speed-slider-container-compact">
@@ -2664,7 +2664,7 @@ import { translationManager, t } from './translations.js';
             <input type="checkbox" id="enableSpeedToggle" ${
                 CONFIG.PAINTING_SPEED_ENABLED ? 'checked' : ''
             } class="wplace-speed-checkbox"/>
-            <span>${t('enablePaintingSpeedLimit')}</span>
+            <span>Enable painting speed limit (batch size control)</span>
           </label>
         </div>
         
@@ -2751,7 +2751,7 @@ import { translationManager, t } from './translations.js';
 
         <div class="wplace-settings-footer">
              <button id="applySettingsBtn" class="wplace-settings-apply-btn">
-                 <i class="fas fa-check"></i> ${t('applySettings')}
+                 <i class="fas fa-check"></i> Apply Settings
           </button>
         </div>
 
@@ -3455,7 +3455,7 @@ import { translationManager, t } from './translations.js';
                 }
 
                 const confirmLoad = confirm(
-                    `${t('savedDataFound')}\n\n` +
+                    `✅ Saved progress found! Load to continue?\n\n` +
                         `Saved: ${new Date(savedData.timestamp).toLocaleString()}\n` +
                         `Progress: ${savedData.state.paintedPixels}/${savedData.state.totalPixels} pixels`
                 );
@@ -3611,15 +3611,15 @@ import { translationManager, t } from './translations.js';
 
                 imageStatsHTML = `
           <div class="wplace-stat-item">
-            <div class="wplace-stat-label"><i class="fas fa-image"></i> ${t('progress')}</div>
+            <div class="wplace-stat-label"><i class="fas fa-image"></i> Progress</div>
             <div class="wplace-stat-value">${progress}%</div>
           </div>
           <div class="wplace-stat-item">
-            <div class="wplace-stat-label"><i class="fas fa-paint-brush"></i> ${t('pixels')}</div>
+            <div class="wplace-stat-label"><i class="fas fa-paint-brush"></i> Pixels</div>
             <div class="wplace-stat-value">${state.paintedPixels}/${state.totalPixels}</div>
           </div>
           <div class="wplace-stat-item">
-            <div class="wplace-stat-label"><i class="fas fa-clock"></i> ${t('estimatedTime')}</div>
+            <div class="wplace-stat-label"><i class="fas fa-clock"></i> Estimated time</div>
             <div class="wplace-stat-value">${Utils.formatTime(state.estimatedTime)}</div>
           </div>
         `;
@@ -3664,7 +3664,7 @@ import { translationManager, t } from './translations.js';
             ${imageStatsHTML}
             <div class="wplace-stat-item">
               <div class="wplace-stat-label">
-                <i class="fas fa-bolt"></i> ${t('charges')}
+                <i class="fas fa-bolt"></i> Charges
               </div>
               <div class="wplace-stat-value" id="wplace-stat-charges-value">
                 ${state.displayCharges} / ${state.maxCharges}
@@ -3672,7 +3672,7 @@ import { translationManager, t } from './translations.js';
             </div>
             <div class="wplace-stat-item">
               <div class="wplace-stat-label">
-                <i class="fas fa-battery-half"></i> ${t('fullChargeIn')}
+                <i class="fas fa-battery-half"></i> Full Charge In
               </div>
               <div class="wplace-stat-value" id="wplace-stat-fullcharge-value">--:--:--</div>
             </div>
@@ -3930,10 +3930,10 @@ import { translationManager, t } from './translations.js';
                 const progress = Math.round((savedData.state.paintedPixels / savedData.state.totalPixels) * 100);
 
                 Utils.showAlert(
-                    `${t('savedDataFound')}\n\n` +
+                    `✅ Saved progress found! Load to continue?\n\n` +
                         `Saved: ${savedDate}\n` +
                         `Progress: ${savedData.state.paintedPixels}/${savedData.state.totalPixels} pixels (${progress}%)\n` +
-                        `${t('clickLoadToContinue')}`,
+                        `Click 'Load Progress' to continue.`,
                     'info'
                 );
             }
@@ -3949,7 +3949,7 @@ import { translationManager, t } from './translations.js';
                 // Update both controls (value shows in input, label shows unit only)
                 cooldownSlider.value = threshold;
                 cooldownInput.value = threshold;
-                cooldownValue.textContent = `${t('charges')}`;
+                cooldownValue.textContent = 'Charges';
 
                 saveBotSettings();
             };
@@ -4823,7 +4823,7 @@ import { translationManager, t } from './translations.js';
             const cooldownValue = document.getElementById('cooldownValue');
             if (cooldownSlider) cooldownSlider.value = state.cooldownChargeThreshold;
             if (cooldownInput) cooldownInput.value = state.cooldownChargeThreshold;
-            if (cooldownValue) cooldownValue.textContent = `${t('charges')}`;
+            if (cooldownValue) cooldownValue.textContent = 'Charges';
 
             const overlayOpacitySlider = document.getElementById('overlayOpacitySlider');
             if (overlayOpacitySlider) overlayOpacitySlider.value = state.overlayOpacity;
