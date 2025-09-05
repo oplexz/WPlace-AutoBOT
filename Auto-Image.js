@@ -21,13 +21,6 @@
     AUTO_CAPTCHA_ENABLED: true, // Turnstile generator enabled by default
     TOKEN_SOURCE: 'generator', // "generator", "manual", or "hybrid" - default to generator
     COOLDOWN_CHARGE_THRESHOLD: 1, // Default wait threshold
-    // Desktop Notifications (defaults)
-    NOTIFICATIONS: {
-      ENABLED: false,
-      ON_CHARGES_REACHED: true,
-      ONLY_WHEN_UNFOCUSED: true,
-      REPEAT_MINUTES: 5, // repeat reminder while threshold condition holds
-    },
     OVERLAY: {
       OPACITY_DEFAULT: 0.2,
       BLUE_MARBLE_DEFAULT: false,
@@ -333,7 +326,6 @@
       tokenCapturedSuccess: 'Token captured successfully',
       turnstileInstructions: 'Complete the verification',
       hideTurnstileBtn: 'Hide',
-      notificationsNotSupported: 'Notifications not supported',
       chargesReadyMessage: 'Charges are ready',
       chargesReadyNotification: 'WPlace AutoBot',
       initMessage: "Click 'Upload Image' to begin",
@@ -394,12 +386,6 @@
     coordinateSnake: CONFIG.COORDINATE_SNAKE,
     blockWidth: CONFIG.COORDINATE_BLOCK_WIDTH,
     blockHeight: CONFIG.COORDINATE_BLOCK_HEIGHT,
-    notificationsEnabled: CONFIG.NOTIFICATIONS.ENABLED,
-    notifyOnChargesReached: CONFIG.NOTIFICATIONS.ON_CHARGES_REACHED,
-    notifyOnlyWhenUnfocused: CONFIG.NOTIFICATIONS.ONLY_WHEN_UNFOCUSED,
-    notificationIntervalMinutes: CONFIG.NOTIFICATIONS.REPEAT_MINUTES,
-    _lastChargesNotifyAt: 0,
-    _lastChargesBelow: true,
     // Smart save tracking
     _lastSavePixelCount: 0,
     _lastSaveTime: 0,
@@ -2557,108 +2543,6 @@
     },
   };
 
-  // Desktop Notification Manager
-  const NotificationManager = {
-    pollTimer: null,
-    pollIntervalMs: 60_000,
-    icon() {
-      const link = document.querySelector("link[rel~='icon']");
-      return link?.href || location.origin + '/favicon.ico';
-    },
-    async requestPermission() {
-      if (!('Notification' in window)) {
-        Utils.showAlert(Utils.t('notificationsNotSupported'), 'warning');
-        return 'denied';
-      }
-      if (Notification.permission === 'granted') return 'granted';
-      try {
-        const perm = await Notification.requestPermission();
-        return perm;
-      } catch {
-        return Notification.permission;
-      }
-    },
-    canNotify() {
-      return (
-        state.notificationsEnabled &&
-        typeof Notification !== 'undefined' &&
-        Notification.permission === 'granted'
-      );
-    },
-    notify(title, body, tag = 'wplace-charges', force = false) {
-      if (!this.canNotify()) return false;
-      if (!force && state.notifyOnlyWhenUnfocused && document.hasFocus()) return false;
-      try {
-        new Notification(title, {
-          body,
-          tag,
-          renotify: true,
-          icon: this.icon(),
-          badge: this.icon(),
-          silent: false,
-        });
-        return true;
-      } catch {
-        // Graceful fallback
-        Utils.showAlert(body, 'info');
-        return false;
-      }
-    },
-    resetEdgeTracking() {
-      state._lastChargesBelow = state.displayCharges < state.cooldownChargeThreshold;
-      state._lastChargesNotifyAt = 0;
-    },
-    maybeNotifyChargesReached(force = false) {
-      if (!state.notificationsEnabled || !state.notifyOnChargesReached) return;
-      const reached = state.displayCharges >= state.cooldownChargeThreshold;
-      const now = Date.now();
-      const repeatMs = Math.max(1, Number(state.notificationIntervalMinutes || 5)) * 60_000;
-      if (reached) {
-        const shouldEdge = state._lastChargesBelow || force;
-        const shouldRepeat = now - (state._lastChargesNotifyAt || 0) >= repeatMs;
-        if (shouldEdge || shouldRepeat) {
-          const msg = Utils.t('chargesReadyMessage', {
-            current: state.displayCharges,
-            max: state.maxCharges,
-            threshold: state.cooldownChargeThreshold,
-          });
-          this.notify(Utils.t('chargesReadyNotification'), msg, 'wplace-notify-charges');
-          state._lastChargesNotifyAt = now;
-        }
-        state._lastChargesBelow = false;
-      } else {
-        state._lastChargesBelow = true;
-      }
-    },
-    startPolling() {
-      this.stopPolling();
-      if (!state.notificationsEnabled || !state.notifyOnChargesReached) return;
-      // lightweight background polling
-      this.pollTimer = setInterval(async () => {
-        try {
-          const { charges, cooldown, max } = await WPlaceService.getCharges();
-          state.displayCharges = Math.floor(charges);
-          state.cooldown = cooldown;
-          state.maxCharges = Math.max(1, Math.floor(max));
-          this.maybeNotifyChargesReached();
-        } catch {
-          /* ignore */
-        }
-      }, this.pollIntervalMs);
-    },
-    stopPolling() {
-      if (this.pollTimer) {
-        clearInterval(this.pollTimer);
-        this.pollTimer = null;
-      }
-    },
-    syncFromState() {
-      this.resetEdgeTracking();
-      if (state.notificationsEnabled && state.notifyOnChargesReached) this.startPolling();
-      else this.stopPolling();
-    },
-  };
-
   // COLOR MATCHING FUNCTION - Optimized with caching
   const colorCache = new Map();
 
@@ -3599,49 +3483,6 @@
             </p>
           </div>
         </div>
-        
-        <!-- Notifications Section -->
-        <div class="wplace-settings-section">
-          <label class="wplace-settings-section-label">
-            <i class="fas fa-bell wplace-icon-bell"></i>
-            Desktop Notifications
-          </label>
-          <div class="wplace-settings-section-wrapper wplace-notifications-wrapper">
-            <label class="wplace-notification-toggle">
-              <span>${Utils.t('enableNotifications')}</span>
-              <input type="checkbox" id="notifEnabledToggle" ${
-                state.notificationsEnabled ? 'checked' : ''
-              } class="wplace-notification-checkbox" />
-            </label>
-            <label class="wplace-notification-toggle">
-              <span>${Utils.t('notifyOnChargesThreshold')}</span>
-              <input type="checkbox" id="notifOnChargesToggle" ${
-                state.notifyOnChargesReached ? 'checked' : ''
-              } class="wplace-notification-checkbox" />
-            </label>
-            <label class="wplace-notification-toggle">
-              <span>${Utils.t('onlyWhenNotFocused')}</span>
-              <input type="checkbox" id="notifOnlyUnfocusedToggle" ${
-                state.notifyOnlyWhenUnfocused ? 'checked' : ''
-              } class="wplace-notification-checkbox" />
-            </label>
-            <div class="wplace-notification-interval">
-              <span>${Utils.t('repeatEvery')}</span>
-              <input type="number" id="notifIntervalInput" min="1" max="60" value="${
-                state.notificationIntervalMinutes
-              }" class="wplace-notification-interval-input" />
-              <span>${Utils.t('minutesPl')}</span>
-            </div>
-            <div class="wplace-notification-buttons">
-              <button id="notifRequestPermBtn" class="wplace-btn wplace-btn-secondary wplace-notification-perm-btn"><i class="fas fa-unlock"></i><span>${Utils.t(
-                'grantPermission'
-              )}</span></button>
-              <button id="notifTestBtn" class="wplace-btn wplace-notification-test-btn"><i class="fas fa-bell"></i><span>${Utils.t(
-                'test'
-              )}</span></button>
-            </div>
-          </div>
-        </div>
       </div>
 
         <div class="wplace-settings-footer">
@@ -4190,23 +4031,9 @@
         // Update functional thresholds
         CONFIG.TRANSPARENCY_THRESHOLD = state.customTransparencyThreshold;
         CONFIG.WHITE_THRESHOLD = state.customWhiteThreshold;
-        // Notifications
-        const notifEnabledToggle = document.getElementById('notifEnabledToggle');
-        const notifOnChargesToggle = document.getElementById('notifOnChargesToggle');
-        const notifOnlyUnfocusedToggle = document.getElementById('notifOnlyUnfocusedToggle');
-        const notifIntervalInput = document.getElementById('notifIntervalInput');
-        if (notifEnabledToggle) state.notificationsEnabled = !!notifEnabledToggle.checked;
-        if (notifOnChargesToggle) state.notifyOnChargesReached = !!notifOnChargesToggle.checked;
-        if (notifOnlyUnfocusedToggle)
-          state.notifyOnlyWhenUnfocused = !!notifOnlyUnfocusedToggle.checked;
-        if (notifIntervalInput) {
-          const v = parseInt(notifIntervalInput.value, 10);
-          if (!isNaN(v) && v >= 1 && v <= 60) state.notificationIntervalMinutes = v;
-        }
         saveBotSettings();
         Utils.showAlert(Utils.t('settingsSaved'), 'success');
         closeSettingsBtn.click();
-        NotificationManager.syncFromState();
       });
 
       makeDraggable(settingsContainer);
@@ -4410,27 +4237,6 @@
       }
 
       // (Advanced color listeners moved outside to work with resize dialog)
-      // (Advanced color listeners moved outside to work with resize dialog)
-      // Notifications listeners
-      const notifPermBtn = settingsContainer.querySelector('#notifRequestPermBtn');
-      const notifTestBtn = settingsContainer.querySelector('#notifTestBtn');
-      if (notifPermBtn) {
-        notifPermBtn.addEventListener('click', async () => {
-          const perm = await NotificationManager.requestPermission();
-          if (perm === 'granted') Utils.showAlert(Utils.t('notificationsEnabled'), 'success');
-          else Utils.showAlert(Utils.t('notificationsPermissionDenied'), 'warning');
-        });
-      }
-      if (notifTestBtn) {
-        notifTestBtn.addEventListener('click', () => {
-          NotificationManager.notify(
-            Utils.t('testNotificationTitle'),
-            Utils.t('testNotificationMessage'),
-            'wplace-notify-test',
-            true
-          );
-        });
-      }
     }
 
     const widthSlider = resizeContainer.querySelector('#widthSlider');
@@ -4822,8 +4628,6 @@
           startTime: Date.now(),
           spentSinceShot: 0,
         };
-        // Evaluate notifications every time we refresh server-side charges
-        NotificationManager.maybeNotifyChargesReached();
       }
 
       if (state.fullChargeInterval) {
@@ -6338,7 +6142,6 @@
         cooldownValue.textContent = `${Utils.t('charges')}`;
 
         saveBotSettings();
-        NotificationManager.resetEdgeTracking(); // prevent spurious notify after threshold change
       };
 
       // Slider event listener
@@ -6366,8 +6169,6 @@
     }
 
     loadBotSettings();
-    // Ensure notification poller reflects current settings
-    NotificationManager.syncFromState();
   }
 
   function getMsToTargetCharges(current, target, cooldown, intervalMs = 0) {
@@ -6865,7 +6666,6 @@
         if (state.displayCharges < state.cooldownChargeThreshold && !state.stopFlag) {
           await Utils.dynamicSleep(() => {
             if (state.displayCharges >= state.cooldownChargeThreshold) {
-              NotificationManager.maybeNotifyChargesReached(true);
               return 0;
             }
             if (state.stopFlag) return 0;
@@ -7131,11 +6931,7 @@
                 h: state.resizeSettings.height,
                 data: btoa(String.fromCharCode(...state.resizeIgnoreMask)),
               }
-            : null, // Notifications
-        notificationsEnabled: state.notificationsEnabled,
-        notifyOnChargesReached: state.notifyOnChargesReached,
-        notifyOnlyWhenUnfocused: state.notifyOnlyWhenUnfocused,
-        notificationIntervalMinutes: state.notificationIntervalMinutes,
+            : null,
         originalImage: state.originalImage,
       };
       CONFIG.PAINTING_SPEED_ENABLED = settings.paintingSpeedEnabled;
@@ -7182,14 +6978,6 @@
       state.coordinateSnake = settings.coordinateSnake ?? CONFIG.COORDINATE_SNAKE;
       state.blockWidth = settings.blockWidth ?? CONFIG.COORDINATE_BLOCK_WIDTH;
       state.blockHeight = settings.blockHeight ?? CONFIG.COORDINATE_BLOCK_HEIGHT;
-      // Notifications
-      state.notificationsEnabled = settings.notificationsEnabled ?? CONFIG.NOTIFICATIONS.ENABLED;
-      state.notifyOnChargesReached =
-        settings.notifyOnChargesReached ?? CONFIG.NOTIFICATIONS.ON_CHARGES_REACHED;
-      state.notifyOnlyWhenUnfocused =
-        settings.notifyOnlyWhenUnfocused ?? CONFIG.NOTIFICATIONS.ONLY_WHEN_UNFOCUSED;
-      state.notificationIntervalMinutes =
-        settings.notificationIntervalMinutes ?? CONFIG.NOTIFICATIONS.REPEAT_MINUTES;
       // Restore ignore mask if dims match current resizeSettings
       if (
         settings.resizeIgnoreMask &&
@@ -7314,17 +7102,6 @@
         transparencyThresholdInput.value = state.customTransparencyThreshold;
       const whiteThresholdInput = document.getElementById('whiteThresholdInput');
       if (whiteThresholdInput) whiteThresholdInput.value = state.customWhiteThreshold;
-      // Notifications UI
-      const notifEnabledToggle = document.getElementById('notifEnabledToggle');
-      if (notifEnabledToggle) notifEnabledToggle.checked = state.notificationsEnabled;
-      const notifOnChargesToggle = document.getElementById('notifOnChargesToggle');
-      if (notifOnChargesToggle) notifOnChargesToggle.checked = state.notifyOnChargesReached;
-      const notifOnlyUnfocusedToggle = document.getElementById('notifOnlyUnfocusedToggle');
-      if (notifOnlyUnfocusedToggle)
-        notifOnlyUnfocusedToggle.checked = state.notifyOnlyWhenUnfocused;
-      const notifIntervalInput = document.getElementById('notifIntervalInput');
-      if (notifIntervalInput) notifIntervalInput.value = state.notificationIntervalMinutes;
-      NotificationManager.resetEdgeTracking();
     } catch (e) {
       console.warn('Could not load bot settings:', e);
     }
