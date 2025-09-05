@@ -286,39 +286,25 @@
   // Dynamically loaded translations
   let loadedTranslations = {};
 
-  // Available languages
-  const AVAILABLE_LANGUAGES = [
-    'en',
-    'ru',
-    'pt',
-    'vi',
-    'fr',
-    'id',
-    'tr',
-    'zh-CN',
-    'zh-TW',
-    'ja',
-    'ko',
-    'uk',
-  ];
-
   // Function to load translations from JSON file with retry mechanism
-  const loadTranslations = async (language, retryCount = 0) => {
-    if (loadedTranslations[language]) {
-      return loadedTranslations[language];
+  const loadTranslations = async (retryCount = 0) => {
+    const LANGUAGE = 'EN';
+
+    if (loadedTranslations[LANGUAGE]) {
+      return loadedTranslations[LANGUAGE];
     }
 
     // Load translations from CDN
-    const url = `https://wplace-autobot.github.io/WPlace-AutoBOT/main/lang/${language}.json`;
+    const url = `https://wplace-autobot.github.io/WPlace-AutoBOT/main/lang/${LANGUAGE}.json`;
     const maxRetries = 3;
     const baseDelay = 1000; // 1 second
 
     try {
       if (retryCount === 0) {
-        console.log(`🔄 Loading ${language} translations from CDN...`);
+        console.log(`🔄 Loading ${LANGUAGE} translations from CDN...`);
       } else {
         console.log(
-          `🔄 Retrying ${language} translations (attempt ${retryCount + 1}/${maxRetries + 1})...`
+          `🔄 Retrying ${LANGUAGE} translations (attempt ${retryCount + 1}/${maxRetries + 1})...`
         );
       }
 
@@ -332,26 +318,26 @@
           translations !== null &&
           Object.keys(translations).length > 0
         ) {
-          loadedTranslations[language] = translations;
+          loadedTranslations[LANGUAGE] = translations;
           console.log(
-            `📚 Loaded ${language} translations successfully from CDN (${
+            `📚 Loaded ${LANGUAGE} translations successfully from CDN (${
               Object.keys(translations).length
             } keys)`
           );
           return translations;
         } else {
-          console.warn(`❌ Invalid translation format for ${language}`);
+          console.warn(`❌ Invalid translation format for ${LANGUAGE}`);
           throw new Error('Invalid translation format');
         }
       } else {
         console.warn(
-          `❌ CDN returned HTTP ${response.status}: ${response.statusText} for ${language} translations`
+          `❌ CDN returned HTTP ${response.status}: ${response.statusText} for ${LANGUAGE} translations`
         );
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
     } catch (error) {
       console.error(
-        `❌ Failed to load ${language} translations from CDN (attempt ${retryCount + 1}):`,
+        `❌ Failed to load ${LANGUAGE} translations from CDN (attempt ${retryCount + 1}):`,
         error
       );
 
@@ -360,61 +346,11 @@
         const delay = baseDelay * Math.pow(2, retryCount);
         console.log(`⏳ Retrying in ${delay}ms...`);
         await new Promise((resolve) => setTimeout(resolve, delay));
-        return loadTranslations(language, retryCount + 1);
+        return loadTranslations(retryCount + 1);
       }
     }
 
     return null;
-  };
-
-  const loadLanguagePreference = async () => {
-    const savedLanguage = localStorage.getItem('wplace_language');
-    const browserLocale = navigator.language;
-    const browserLanguage = browserLocale.split('-')[0];
-
-    let selectedLanguage = 'en'; // Default fallback
-
-    try {
-      // Check if we have the saved language available
-      if (savedLanguage && AVAILABLE_LANGUAGES.includes(savedLanguage)) {
-        selectedLanguage = savedLanguage;
-        console.log(`🔄 Using saved language preference: ${selectedLanguage}`);
-      }
-      // Try full locale match (e.g. "zh-CN", "zh-TW" etc)
-      else if (AVAILABLE_LANGUAGES.includes(browserLocale)) {
-        selectedLanguage = browserLocale;
-        localStorage.setItem('wplace_language', browserLocale);
-        console.log(`🔄 Using browser locale: ${selectedLanguage}`);
-      }
-      // Try base language match (e.g. "en" for "en-US" or "en-GB" etc)
-      else if (AVAILABLE_LANGUAGES.includes(browserLanguage)) {
-        selectedLanguage = browserLanguage;
-        localStorage.setItem('wplace_language', browserLanguage);
-        console.log(`🔄 Using browser language: ${selectedLanguage}`);
-      }
-      // Use English as fallback
-      else {
-        console.log(`🔄 No matching language found, using English fallback`);
-      }
-
-      // Set the language in state first
-      state.language = selectedLanguage;
-
-      // Only load translations if not already loaded and not English (which should already be loaded)
-      if (selectedLanguage !== 'en' && !loadedTranslations[selectedLanguage]) {
-        const loaded = await loadTranslations(selectedLanguage);
-        if (!loaded) {
-          console.warn(
-            `⚠️ Failed to load ${selectedLanguage} translations, falling back to English`
-          );
-          state.language = 'en';
-          localStorage.setItem('wplace_language', 'en');
-        }
-      }
-    } catch (error) {
-      console.error(`❌ Error in loadLanguagePreference:`, error);
-      state.language = 'en'; // Always ensure we have a valid language
-    }
   };
 
   // Simple user notification function for critical issues
@@ -451,15 +387,12 @@
 
       // Always ensure English is loaded as fallback first
       if (!loadedTranslations['en']) {
-        const englishLoaded = await loadTranslations('en');
+        const englishLoaded = await loadTranslations();
         if (!englishLoaded) {
           console.warn('⚠️ Failed to load English translations from CDN, using fallback');
           showTranslationWarning('⚠️ Translation loading failed, using basic fallbacks');
         }
       }
-
-      // Then load user's language preference
-      await loadLanguagePreference();
 
       console.log(`✅ Translation system initialized. Active language: ${state.language}`);
     } catch (error) {
@@ -502,33 +435,6 @@
       chargesReadyNotification: 'WPlace AutoBot',
       initMessage: "Click 'Upload Image' to begin",
     },
-  };
-
-  // Safe translation function with multiple fallback levels
-  const getText = (key, replacements = {}) => {
-    // Try current language first
-    let text = loadedTranslations[state.language]?.[key];
-
-    // Fallback to English translations
-    if (!text && state.language !== 'en') {
-      text = loadedTranslations['en']?.[key];
-    }
-
-    // Fallback to hardcoded English
-    if (!text) {
-      text = FALLBACK_TEXT['en']?.[key];
-    }
-
-    // Last resort - return the key itself
-    if (!text) {
-      console.warn(`⚠️ Missing translation for key: ${key}`);
-      return key;
-    }
-
-    // Handle string replacements like {count}, {time}, etc.
-    return Object.entries(replacements).reduce((result, [placeholder, value]) => {
-      return result.replace(new RegExp(`\\{${placeholder}\\}`, 'g'), value);
-    }, text);
   };
 
   // GLOBAL STATE
@@ -1297,18 +1203,6 @@
       }
     }
   });
-
-  async function detectLanguage() {
-    try {
-      const response = await fetch('https://backend.wplace.live/me', {
-        credentials: 'include',
-      });
-      const data = await response.json();
-      state.language = data.language === 'pt' ? 'pt' : 'en';
-    } catch {
-      state.language = navigator.language.startsWith('pt') ? 'pt' : 'en';
-    }
-  }
 
   // UTILITY FUNCTIONS
   const Utils = {
@@ -3344,8 +3238,6 @@
   }
 
   async function createUI() {
-    await detectLanguage();
-
     const existingContainer = document.getElementById('wplace-image-bot-container');
     const existingStats = document.getElementById('wplace-stats-container');
     const existingSettings = document.getElementById('wplace-settings-container');
@@ -4007,54 +3899,6 @@
             </select>
           </div>
         </div>
-
-        <!-- Language Selection Section -->
-        <div class="wplace-settings-section">
-          <label class="wplace-settings-section-label">
-            <i class="fas fa-globe wplace-icon-globe"></i>
-            ${Utils.t('language')}
-          </label>
-          <div class="wplace-settings-section-wrapper">
-            <select id="languageSelect" class="wplace-settings-select">
-              <option value="vi" ${
-                state.language === 'vi' ? 'selected' : ''
-              } class="wplace-settings-option">🇻🇳 Tiếng Việt</option>
-              <option value="id" ${
-                state.language === 'id' ? 'selected' : ''
-              } class="wplace-settings-option">🇮🇩 Bahasa Indonesia</option>
-              <option value="ru" ${
-                state.language === 'ru' ? 'selected' : ''
-              } class="wplace-settings-option">🇷🇺 Русский</option>
-              <option value="uk" ${
-                state.language === 'uk' ? 'selected' : ''
-              } class="wplace-settings-option">🇺🇦 Українська</option>
-              <option value="en" ${
-                state.language === 'en' ? 'selected' : ''
-              } class="wplace-settings-option">🇺🇸 English</option>
-              <option value="pt" ${
-                state.language === 'pt' ? 'selected' : ''
-              } class="wplace-settings-option">🇧🇷 Português</option>
-              <option value="fr" ${
-                state.language === 'fr' ? 'selected' : ''
-              } class="wplace-settings-option">🇫🇷 Français</option>
-              <option value="tr" ${
-                state.language === 'tr' ? 'selected' : ''
-              } class="wplace-settings-option">🇹🇷 Türkçe</option>
-              <option value="zh-CN" ${
-                state.language === 'zh-CN' ? 'selected' : ''
-              } class="wplace-settings-option">🇨🇳 简体中文</option>
-              <option value="zh-TW" ${
-                state.language === 'zh-TW' ? 'selected' : ''
-              } class="wplace-settings-option">🇹🇼 繁體中文</option>
-              <option value="ja" ${
-                state.language === 'ja' ? 'selected' : ''
-              } class="wplace-settings-option">🇯🇵 日本語</option>
-              <option value="ko" ${
-                state.language === 'ko' ? 'selected' : ''
-              } class="wplace-settings-option">🇰🇷 한국어</option>
-              </select>
-          </div>
-        </div>
       </div>
 
         <div class="wplace-settings-footer">
@@ -4116,29 +3960,6 @@
           cursor: pointer;
           border: none;
           transition: all 0.2s ease;
-        }
-
-        #themeSelect:hover, #languageSelect:hover {
-          border-color: rgba(255,255,255,0.4);
-          background: rgba(255,255,255,0.2);
-          transform: translateY(-1px);
-          box-shadow: 0 5px 15px rgba(0,0,0,0.15);
-        }
-
-        #themeSelect:focus, #languageSelect:focus {
-          border-color: #4facfe;
-          box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.3);
-        }
-
-        #themeSelect option, #languageSelect option {
-          background: #2d3748;
-          color: white;
-          padding: 10px;
-          border-radius: 6px;
-        }
-
-        #themeSelect option:hover, #languageSelect option:hover {
-          background: #4a5568;
         }
 
         .wplace-dragging {
@@ -4724,31 +4545,6 @@
             }
             saveBotSettings();
           }
-        });
-      }
-
-      const languageSelect = settingsContainer.querySelector('#languageSelect');
-      if (languageSelect) {
-        languageSelect.addEventListener('change', async (e) => {
-          const newLanguage = e.target.value;
-          state.language = newLanguage;
-          localStorage.setItem('wplace_language', newLanguage);
-
-          // Load the new language translations
-          await loadTranslations(newLanguage);
-
-          setTimeout(() => {
-            settingsContainer.style.display = 'none';
-            createUI();
-          }, 100);
-        });
-      }
-
-      const themeSelect = settingsContainer.querySelector('#themeSelect');
-      if (themeSelect) {
-        themeSelect.addEventListener('change', (e) => {
-          const newTheme = e.target.value;
-          switchTheme(newTheme);
         });
       }
 
