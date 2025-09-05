@@ -582,8 +582,6 @@
       startRegionX,
       startRegionY
     ) {
-      const tileKey = `${tx},${ty}`;
-
       // Calculate the portion of the image that overlaps with this tile
       const imgStartX = (tx - startRegionX) * this.tileSize - startPixelX;
       const imgStartY = (ty - startRegionY) * this.tileSize - startPixelY;
@@ -1048,37 +1046,37 @@
               );
               window.postMessage({ source: 'turnstile-capture', token: payload.t }, '*');
             }
-          } catch (_) {
-            /* ignore */
+          } catch (e) {
+            console.error('❌ Error capturing Turnstile token:', e);
           }
         }
 
         const contentType = response.headers.get('content-type') || '';
         if (contentType.includes('image/png') && url.includes('.png')) {
           const cloned = response.clone();
-          return new Promise(async (resolve) => {
+          return new Promise((resolve) => {
             const blobUUID = crypto.randomUUID();
-            const originalBlob = await cloned.blob();
+            cloned.blob().then((originalBlob) => {
+              fetchedBlobQueue.set(blobUUID, (processedBlob) => {
+                resolve(
+                  new Response(processedBlob, {
+                    headers: cloned.headers,
+                    status: cloned.status,
+                    statusText: cloned.statusText,
+                  })
+                );
+              });
 
-            fetchedBlobQueue.set(blobUUID, (processedBlob) => {
-              resolve(
-                new Response(processedBlob, {
-                  headers: cloned.headers,
-                  status: cloned.status,
-                  statusText: cloned.statusText,
-                })
+              window.postMessage(
+                {
+                  source: 'auto-image-tile',
+                  endpoint: url,
+                  blobID: blobUUID,
+                  blobData: originalBlob,
+                },
+                '*'
               );
             });
-
-            window.postMessage(
-              {
-                source: 'auto-image-tile',
-                endpoint: url,
-                blobID: blobUUID,
-                blobData: originalBlob,
-              },
-              '*'
-            );
           });
         }
       }
@@ -1577,7 +1575,7 @@
         for (const script of scripts) {
           const content = script.textContent || script.innerHTML;
           const match = content.match(
-            /(?:sitekey|data-sitekey)['"\s\[\]:\=\(]*['"]?([0-9a-zA-Z_-]{20,})['"]?/i
+            /(?:sitekey|data-sitekey)['"\s[\]:=(]*['"]?([0-9a-zA-Z_-]{20,})['"]?/i
           );
           if (match && match[1]) {
             const extracted = match[1].replace(/['"]/g, '');
@@ -3277,8 +3275,8 @@
             <div class="wplace-dual-control-compact">
                 <div class="wplace-speed-slider-container-compact">
                   <input type="range" id="speedSlider" min="${CONFIG.PAINTING_SPEED.MIN}" max="${
-      CONFIG.PAINTING_SPEED.MAX
-    }" value="${CONFIG.PAINTING_SPEED.DEFAULT}" class="wplace-speed-slider">
+                    CONFIG.PAINTING_SPEED.MAX
+                  }" value="${CONFIG.PAINTING_SPEED.DEFAULT}" class="wplace-speed-slider">
                 </div>
                 <div class="wplace-speed-input-container-compact">
                   <div class="wplace-input-group-compact">
@@ -3518,8 +3516,8 @@
     resizeContainer.className = 'resize-container';
     resizeContainer.innerHTML = `
       <h3 class="resize-dialog-title" style="color: ${CONFIG.THEME.text}">${Utils.t(
-      'resizeImage'
-    )}</h3>
+        'resizeImage'
+      )}</h3>
       <div class="resize-controls">
         <label class="resize-control-label">
           Width: <span id="widthValue">0</span>px
