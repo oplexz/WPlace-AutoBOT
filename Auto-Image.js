@@ -1,5 +1,5 @@
 // eslint-disable-next-line prettier/prettier
-; (async () => {
+(async () => {
   // CONFIGURATION CONSTANTS
   const CONFIG = {
     COOLDOWN_DEFAULT: 31000,
@@ -1346,34 +1346,34 @@
     // Debounced scroll-to-adjust handler for sliders
     createScrollToAdjust: (element, updateCallback, min, max, step = 1) => {
       let debounceTimer = null;
-      
+
       const handleWheel = (e) => {
         // Only trigger when hovering over the slider
         if (e.target !== element) return;
-        
+
         e.preventDefault();
         e.stopPropagation();
-        
+
         // Clear existing debounce timer
         if (debounceTimer) {
           clearTimeout(debounceTimer);
         }
-        
+
         // Debounce the adjustment to make it precise
         debounceTimer = setTimeout(() => {
           const currentValue = parseInt(element.value) || 0;
           const delta = e.deltaY > 0 ? -step : step;
           const newValue = Math.max(min, Math.min(max, currentValue + delta));
-          
+
           if (newValue !== currentValue) {
             element.value = newValue;
             updateCallback(newValue);
           }
         }, 50); // 50ms debounce for precise control
       };
-      
+
       element.addEventListener('wheel', handleWheel, { passive: false });
-      
+
       // Return cleanup function
       return () => {
         if (debounceTimer) clearTimeout(debounceTimer);
@@ -2023,9 +2023,11 @@
         };
       }
 
-      const cacheKey = `${targetRgb[0]},${targetRgb[1]},${targetRgb[2]}|${state.colorMatchingAlgorithm}|${
-        state.enableChromaPenalty ? 'c' : 'nc'
-      }|${state.chromaPenaltyWeight}|${exactMatch ? 'exact' : 'closest'}`;
+      const cacheKey = `${targetRgb[0]},${targetRgb[1]},${targetRgb[2]}|${
+        state.colorMatchingAlgorithm
+      }|${state.enableChromaPenalty ? 'c' : 'nc'}|${state.chromaPenaltyWeight}|${
+        exactMatch ? 'exact' : 'closest'
+      }`;
 
       if (colorCache.has(cacheKey)) return colorCache.get(cacheKey);
 
@@ -2224,9 +2226,9 @@
         console.log('\n--- AVAILABLE COLORS ---');
         availableColors.forEach((color, index) => {
           console.log(
-            `${
-              index + 1
-            }. ID: ${color.id}, Name: "${color.name}", RGB: (${color.rgb[0]}, ${color.rgb[1]}, ${color.rgb[2]})`
+            `${index + 1}. ID: ${color.id}, Name: "${color.name}", RGB: (${color.rgb[0]}, ${
+              color.rgb[1]
+            }, ${color.rgb[2]})`
           );
         });
       }
@@ -2235,9 +2237,9 @@
         console.log('\n--- UNAVAILABLE COLORS ---');
         unavailableColors.forEach((color, index) => {
           console.log(
-            `${
-              index + 1
-            }. ID: ${color.id}, Name: "${color.name}", RGB: (${color.rgb[0]}, ${color.rgb[1]}, ${color.rgb[2]}) [LOCKED]`
+            `${index + 1}. ID: ${color.id}, Name: "${color.name}", RGB: (${color.rgb[0]}, ${
+              color.rgb[1]
+            }, ${color.rgb[2]}) [LOCKED]`
           );
         });
       }
@@ -3388,10 +3390,9 @@
       appendLinkOnce('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
     }
 
-    appendLinkOnce(
-      'https://wplace-autobot.github.io/WPlace-AutoBOT/main/auto-image-styles.css',
-      { 'data-wplace-theme': 'true' }
-    );
+    appendLinkOnce('https://wplace-autobot.github.io/WPlace-AutoBOT/main/auto-image-styles.css', {
+      'data-wplace-theme': 'true',
+    });
 
     const container = document.createElement('div');
     container.id = 'wplace-image-bot-container';
@@ -3482,13 +3483,19 @@
                 <label id="cooldownLabel">${Utils.t('waitCharges')}:</label>
                 <div class="wplace-dual-control-compact">
                     <div class="wplace-slider-container-compact">
-                        <input type="range" id="cooldownSlider" class="wplace-slider" min="1" max="1" value="${state.cooldownChargeThreshold}">
+                        <input type="range" id="cooldownSlider" class="wplace-slider" min="1" max="1" value="${
+                          state.cooldownChargeThreshold
+                        }">
                     </div>
                     <div class="wplace-input-group-compact">
                         <button id="cooldownDecrease" class="wplace-input-btn-compact" type="button">-</button>
-                        <input type="number" id="cooldownInput" class="wplace-number-input-compact" min="1" max="999" value="${state.cooldownChargeThreshold}">
+                        <input type="number" id="cooldownInput" class="wplace-number-input-compact" min="1" max="999" value="${
+                          state.cooldownChargeThreshold
+                        }">
                         <button id="cooldownIncrease" class="wplace-input-btn-compact" type="button">+</button>
-                        <span id="cooldownValue" class="wplace-input-label-compact">${Utils.t('charges')}</span>
+                        <span id="cooldownValue" class="wplace-input-label-compact">${Utils.t(
+                          'charges'
+                        )}</span>
                     </div>
                 </div>
             </div>
@@ -3679,10 +3686,12 @@
                      border: 1px solid ${theme.accent || 'transparent'};
                    ">${Math.round(state.overlayOpacity * 100)}%</div>
                 </div>
-                <input type="range" id="overlayOpacitySlider" min="0.1" max="1" step="0.05" value="${state.overlayOpacity}" class="wplace-overlay-opacity-slider" style="
-                  background: linear-gradient(to right, ${
-                    theme.highlight || '#48dbfb'
-                  } 0%, ${theme.purple || theme.neon || '#d3a4ff'} 100%); 
+                <input type="range" id="overlayOpacitySlider" min="0.1" max="1" step="0.05" value="${
+                  state.overlayOpacity
+                }" class="wplace-overlay-opacity-slider" style="
+                  background: linear-gradient(to right, ${theme.highlight || '#48dbfb'} 0%, ${
+      theme.purple || theme.neon || '#d3a4ff'
+    } 100%); 
                   border-radius: ${theme.borderRadius === '0' ? '0' : '4px'}; 
                 ">
               </div>
@@ -3725,7 +3734,9 @@
                   ${Utils.t('paintWhitePixelsDescription')}
                 </p>
               </div>
-              <input type="checkbox" id="settingsPaintWhiteToggle" ${state.paintWhitePixels ? 'checked' : ''} 
+              <input type="checkbox" id="settingsPaintWhiteToggle" ${
+                state.paintWhitePixels ? 'checked' : ''
+              } 
                 class="wplace-settings-checkbox"
                 style="accent-color: ${theme.highlight || '#48dbfb'};"/>
             </label>
@@ -3742,7 +3753,9 @@
                   ${Utils.t('paintTransparentPixelsDescription')}
                 </p>
               </div>
-              <input type="checkbox" id="settingsPaintTransparentToggle" ${state.paintTransparentPixels ? 'checked' : ''} 
+              <input type="checkbox" id="settingsPaintTransparentToggle" ${
+                state.paintTransparentPixels ? 'checked' : ''
+              } 
                 class="wplace-settings-checkbox"
                 style="accent-color: ${theme.highlight || '#48dbfb'};"/>
             </label>
@@ -3790,20 +3803,28 @@
             </div>
             <div class="wplace-dual-control-compact">
                 <div class="wplace-speed-slider-container-compact">
-                  <input type="range" id="speedSlider" min="${CONFIG.PAINTING_SPEED.MIN}" max="${CONFIG.PAINTING_SPEED.MAX}" value="${CONFIG.PAINTING_SPEED.DEFAULT}" class="wplace-speed-slider">
+                  <input type="range" id="speedSlider" min="${CONFIG.PAINTING_SPEED.MIN}" max="${
+      CONFIG.PAINTING_SPEED.MAX
+    }" value="${CONFIG.PAINTING_SPEED.DEFAULT}" class="wplace-speed-slider">
                 </div>
                 <div class="wplace-speed-input-container-compact">
                   <div class="wplace-input-group-compact">
                     <button id="speedDecrease" class="wplace-input-btn-compact" type="button">-</button>
-                    <input type="number" id="speedInput" class="wplace-number-input-compact" min="${CONFIG.PAINTING_SPEED.MIN}" max="${CONFIG.PAINTING_SPEED.MAX}" value="${CONFIG.PAINTING_SPEED.DEFAULT}">
+                    <input type="number" id="speedInput" class="wplace-number-input-compact" min="${
+                      CONFIG.PAINTING_SPEED.MIN
+                    }" max="${CONFIG.PAINTING_SPEED.MAX}" value="${CONFIG.PAINTING_SPEED.DEFAULT}">
                     <button id="speedIncrease" class="wplace-input-btn-compact" type="button">+</button>
                     <span id="speedValue" class="wplace-input-label-compact">pixels</span>
                   </div>
                 </div>
             </div>
             <div class="wplace-speed-labels">
-              <span class="wplace-speed-min"><i class="fas fa-turtle"></i> ${CONFIG.PAINTING_SPEED.MIN}</span>
-              <span class="wplace-speed-max"><i class="fas fa-rabbit"></i> ${CONFIG.PAINTING_SPEED.MAX}</span>
+              <span class="wplace-speed-min"><i class="fas fa-turtle"></i> ${
+                CONFIG.PAINTING_SPEED.MIN
+              }</span>
+              <span class="wplace-speed-max"><i class="fas fa-rabbit"></i> ${
+                CONFIG.PAINTING_SPEED.MAX
+              }</span>
             </div>
           </div>
           
@@ -3815,14 +3836,18 @@
                   <i class="fas fa-arrow-down wplace-icon-min"></i>
                   Minimum Batch Size
                 </label>
-                <input type="number" id="randomBatchMin" min="1" max="1000" value="${CONFIG.RANDOM_BATCH_RANGE.MIN}" class="wplace-settings-number-input">
+                <input type="number" id="randomBatchMin" min="1" max="1000" value="${
+                  CONFIG.RANDOM_BATCH_RANGE.MIN
+                }" class="wplace-settings-number-input">
               </div>
               <div>
                 <label class="wplace-random-batch-label">
                   <i class="fas fa-arrow-up wplace-icon-max"></i>
                   Maximum Batch Size
                 </label>
-                <input type="number" id="randomBatchMax" min="1" max="1000" value="${CONFIG.RANDOM_BATCH_RANGE.MAX}" class="wplace-settings-number-input">
+                <input type="number" id="randomBatchMax" min="1" max="1000" value="${
+                  CONFIG.RANDOM_BATCH_RANGE.MAX
+                }" class="wplace-settings-number-input">
               </div>
             </div>
             <p class="wplace-random-batch-description">
@@ -3946,7 +3971,9 @@
             </label>
             <div class="wplace-notification-interval">
               <span>${Utils.t('repeatEvery')}</span>
-              <input type="number" id="notifIntervalInput" min="1" max="60" value="${state.notificationIntervalMinutes}" class="wplace-notification-interval-input" />
+              <input type="number" id="notifIntervalInput" min="1" max="60" value="${
+                state.notificationIntervalMinutes
+              }" class="wplace-notification-interval-input" />
               <span>${Utils.t('minutesPl')}</span>
             </div>
             <div class="wplace-notification-buttons">
@@ -3988,18 +4015,42 @@
           </label>
           <div class="wplace-settings-section-wrapper">
             <select id="languageSelect" class="wplace-settings-select">
-              <option value="vi" ${state.language === 'vi' ? 'selected' : ''} class="wplace-settings-option">🇻🇳 Tiếng Việt</option>
-              <option value="id" ${state.language === 'id' ? 'selected' : ''} class="wplace-settings-option">🇮🇩 Bahasa Indonesia</option>
-              <option value="ru" ${state.language === 'ru' ? 'selected' : ''} class="wplace-settings-option">🇷🇺 Русский</option>
-              <option value="uk" ${state.language === 'uk' ? 'selected' : ''} class="wplace-settings-option">🇺🇦 Українська</option>
-              <option value="en" ${state.language === 'en' ? 'selected' : ''} class="wplace-settings-option">🇺🇸 English</option>
-              <option value="pt" ${state.language === 'pt' ? 'selected' : ''} class="wplace-settings-option">🇧🇷 Português</option>
-              <option value="fr" ${state.language === 'fr' ? 'selected' : ''} class="wplace-settings-option">🇫🇷 Français</option>
-              <option value="tr" ${state.language === 'tr' ? 'selected' : ''} class="wplace-settings-option">🇹🇷 Türkçe</option>
-              <option value="zh-CN" ${state.language === 'zh-CN' ? 'selected' : ''} class="wplace-settings-option">🇨🇳 简体中文</option>
-              <option value="zh-TW" ${state.language === 'zh-TW' ? 'selected' : ''} class="wplace-settings-option">🇹🇼 繁體中文</option>
-              <option value="ja" ${state.language === 'ja' ? 'selected' : ''} class="wplace-settings-option">🇯🇵 日本語</option>
-              <option value="ko" ${state.language === 'ko' ? 'selected' : ''} class="wplace-settings-option">🇰🇷 한국어</option>
+              <option value="vi" ${
+                state.language === 'vi' ? 'selected' : ''
+              } class="wplace-settings-option">🇻🇳 Tiếng Việt</option>
+              <option value="id" ${
+                state.language === 'id' ? 'selected' : ''
+              } class="wplace-settings-option">🇮🇩 Bahasa Indonesia</option>
+              <option value="ru" ${
+                state.language === 'ru' ? 'selected' : ''
+              } class="wplace-settings-option">🇷🇺 Русский</option>
+              <option value="uk" ${
+                state.language === 'uk' ? 'selected' : ''
+              } class="wplace-settings-option">🇺🇦 Українська</option>
+              <option value="en" ${
+                state.language === 'en' ? 'selected' : ''
+              } class="wplace-settings-option">🇺🇸 English</option>
+              <option value="pt" ${
+                state.language === 'pt' ? 'selected' : ''
+              } class="wplace-settings-option">🇧🇷 Português</option>
+              <option value="fr" ${
+                state.language === 'fr' ? 'selected' : ''
+              } class="wplace-settings-option">🇫🇷 Français</option>
+              <option value="tr" ${
+                state.language === 'tr' ? 'selected' : ''
+              } class="wplace-settings-option">🇹🇷 Türkçe</option>
+              <option value="zh-CN" ${
+                state.language === 'zh-CN' ? 'selected' : ''
+              } class="wplace-settings-option">🇨🇳 简体中文</option>
+              <option value="zh-TW" ${
+                state.language === 'zh-TW' ? 'selected' : ''
+              } class="wplace-settings-option">🇹🇼 繁體中文</option>
+              <option value="ja" ${
+                state.language === 'ja' ? 'selected' : ''
+              } class="wplace-settings-option">🇯🇵 日本語</option>
+              <option value="ko" ${
+                state.language === 'ko' ? 'selected' : ''
+              } class="wplace-settings-option">🇰🇷 한국어</option>
               </select>
           </div>
         </div>
@@ -4261,9 +4312,13 @@
           <div class="resize-chroma-weight-control">
             <div class="resize-chroma-weight-header">
               <span>${Utils.t('chromaWeight')}</span>
-              <span id="chromaWeightValue" class="resize-chroma-weight-value">${state.chromaPenaltyWeight}</span>
+              <span id="chromaWeightValue" class="resize-chroma-weight-value">${
+                state.chromaPenaltyWeight
+              }</span>
             </div>
-            <input type="range" id="chromaPenaltyWeightSlider" min="0" max="0.5" step="0.01" value="${state.chromaPenaltyWeight}" class="resize-chroma-weight-slider" />
+            <input type="range" id="chromaPenaltyWeightSlider" min="0" max="0.5" step="0.01" value="${
+              state.chromaPenaltyWeight
+            }" class="resize-chroma-weight-slider" />
           </div>
           <label class="resize-advanced-toggle">
             <div class="resize-advanced-toggle-content">
@@ -4277,11 +4332,15 @@
           <div class="resize-threshold-controls">
             <label class="resize-threshold-label">
               <span class="resize-advanced-label-text">Transparency</span>
-              <input type="number" id="transparencyThresholdInput" min="0" max="255" value="${state.customTransparencyThreshold}" class="resize-threshold-input" />
+              <input type="number" id="transparencyThresholdInput" min="0" max="255" value="${
+                state.customTransparencyThreshold
+              }" class="resize-threshold-input" />
             </label>
             <label class="resize-threshold-label">
               <span class="resize-advanced-label-text">White Thresh</span>
-              <input type="number" id="whiteThresholdInput" min="200" max="255" value="${state.customWhiteThreshold}" class="resize-threshold-input" />
+              <input type="number" id="whiteThresholdInput" min="200" max="255" value="${
+                state.customWhiteThreshold
+              }" class="resize-threshold-input" />
             </label>
           </div>
           <button id="resetAdvancedColorBtn" class="wplace-btn resize-reset-advanced-btn">Reset Advanced</button>
@@ -4750,17 +4809,20 @@
       const speedDecrease = settingsContainer.querySelector('#speedDecrease');
       const speedIncrease = settingsContainer.querySelector('#speedIncrease');
       const speedValue = settingsContainer.querySelector('#speedValue');
-      
+
       if (speedSlider && speedInput && speedValue && speedDecrease && speedIncrease) {
         const updateSpeed = (newValue) => {
-          const speed = Math.max(CONFIG.PAINTING_SPEED.MIN, Math.min(CONFIG.PAINTING_SPEED.MAX, parseInt(newValue)));
+          const speed = Math.max(
+            CONFIG.PAINTING_SPEED.MIN,
+            Math.min(CONFIG.PAINTING_SPEED.MAX, parseInt(newValue))
+          );
           state.paintingSpeed = speed;
-          
+
           // Update both controls (value shows in input, label shows unit only)
           speedSlider.value = speed;
           speedInput.value = speed;
           speedValue.textContent = `pixels`;
-          
+
           saveBotSettings();
         };
 
@@ -4785,7 +4847,13 @@
         });
 
         // Add scroll-to-adjust for speed slider
-        Utils.createScrollToAdjust(speedSlider, updateSpeed, CONFIG.PAINTING_SPEED.MIN, CONFIG.PAINTING_SPEED.MAX, 1);
+        Utils.createScrollToAdjust(
+          speedSlider,
+          updateSpeed,
+          CONFIG.PAINTING_SPEED.MIN,
+          CONFIG.PAINTING_SPEED.MAX,
+          1
+        );
       }
 
       if (enableBlueMarbleToggle) {
@@ -5674,9 +5742,9 @@
         if (_panRaf) return;
         _panRaf = requestAnimationFrame(() => {
           clampPan();
-          canvasStack.style.transform = `translate3d(${Math.round(
-            panX
-          )}px, ${Math.round(panY)}px, 0) scale(${_zoomLevel})`;
+          canvasStack.style.transform = `translate3d(${Math.round(panX)}px, ${Math.round(
+            panY
+          )}px, 0) scale(${_zoomLevel})`;
           _panRaf = 0;
         });
       };
@@ -6721,12 +6789,12 @@
       const updateCooldown = (newValue) => {
         const threshold = Math.max(1, Math.min(state.maxCharges || 999, parseInt(newValue)));
         state.cooldownChargeThreshold = threshold;
-        
+
         // Update both controls (value shows in input, label shows unit only)
         cooldownSlider.value = threshold;
         cooldownInput.value = threshold;
         cooldownValue.textContent = `${Utils.t('charges')}`;
-        
+
         saveBotSettings();
         NotificationManager.resetEdgeTracking(); // prevent spurious notify after threshold change
       };
@@ -7140,9 +7208,9 @@
         ) {
           if (pixelBatch && pixelBatch.pixels.length > 0) {
             console.log(
-              `🌍 Sending region-change batch with ${pixelBatch.pixels.length} pixels (switching to region ${
-                regionX + adderX
-              },${regionY + adderY})`
+              `🌍 Sending region-change batch with ${
+                pixelBatch.pixels.length
+              } pixels (switching to region ${regionX + adderX},${regionY + adderY})`
             );
             const success = await flushPixelBatch(pixelBatch);
 
@@ -7203,10 +7271,12 @@
               continue;
             }
             console.debug(
-              `[COMPARE] Pixel at 📍 (${pixelX}, ${pixelY}) in region (${
-                regionX + adderX
-              }, ${regionY + adderY})\n` +
-                `  ├── Current color: rgb(${tilePixelRGBA.slice(0, 3).join(', ')}) (id: ${mappedCanvasColor.id})\n` +
+              `[COMPARE] Pixel at 📍 (${pixelX}, ${pixelY}) in region (${regionX + adderX}, ${
+                regionY + adderY
+              })\n` +
+                `  ├── Current color: rgb(${tilePixelRGBA.slice(0, 3).join(', ')}) (id: ${
+                  mappedCanvasColor.id
+                })\n` +
                 `  ├── Target color:  rgb(${targetPixelInfo.r}, ${targetPixelInfo.g}, ${targetPixelInfo.b}) (id: ${targetMappedColorId})\n` +
                 `  └── Status: ${
                   isMatch ? '✅ Already painted → SKIP' : '🔴 Needs paint → PAINT'
