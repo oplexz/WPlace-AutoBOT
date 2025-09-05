@@ -1,5 +1,17 @@
+// ==UserScript==
+// @name         WPlace Auto-Image
+// @namespace    https://wplace.live/
+// @version      0.0.1
+// @description  WPlace Auto-Image, but I went ahead and removed half the features.
+// @author       DarkModde + community
+// @match        https://wplace.live/*
+// @match        https://www.wplace.live/*
+// @run-at       document-idle
+// @icon         https://www.google.com/s2/favicons?sz=64&domain=wplace.live
+// @grant        none
+// ==/UserScript==
+
 /* cSpell:disable */
-// eslint-disable-next-line prettier/prettier
 (async () => {
   // CONFIGURATION CONSTANTS
   const CONFIG = {
