@@ -124,75 +124,22 @@
         background-clip: text; font-weight: bold;
       `,
     },
-    THEMES: {
-      'Classic Autobot': {
-        primary: '#000000',
-        secondary: '#111111',
-        accent: '#222222',
-        text: '#ffffff',
-        highlight: '#775ce3',
-        success: '#00ff00',
-        error: '#ff0000',
-        warning: '#ffaa00',
-        fontFamily: "'Segoe UI', Roboto, sans-serif",
-        borderRadius: '12px',
-        borderStyle: 'solid',
-        borderWidth: '1px',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.1)',
-        backdropFilter: 'blur(10px)',
-        animations: {
-          glow: false,
-          scanline: false,
-          'pixel-blink': false,
-        },
-      },
-      'Classic Light': {
-        primary: '#ffffff',
-        secondary: '#f8f9fa',
-        accent: '#e9ecef',
-        text: '#212529',
-        highlight: '#6f42c1',
-        success: '#28a745',
-        error: '#dc3545',
-        warning: '#ffc107',
-        fontFamily: "'Segoe UI', Roboto, sans-serif",
-        borderRadius: '12px',
-        borderStyle: 'solid',
-        borderWidth: '1px',
-        boxShadow: '0 8px 32px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.08)',
-        backdropFilter: 'blur(10px)',
-        animations: {
-          glow: false,
-          scanline: false,
-          'pixel-blink': false,
-        },
-      },
-      'Neon Retro': {
-        primary: '#1a1a2e',
-        secondary: '#16213e',
-        accent: '#0f3460',
-        text: '#00ff41',
-        highlight: '#ff6b35',
-        success: '#39ff14',
-        error: '#ff073a',
-        warning: '#ffff00',
-        neon: '#00ffff',
-        purple: '#bf00ff',
-        pink: '#ff1493',
-        fontFamily: "'Press Start 2P', monospace",
-        borderRadius: '0',
-        borderStyle: 'solid',
-        borderWidth: '3px',
-        boxShadow: '0 0 20px rgba(0, 255, 65, 0.3), inset 0 0 20px rgba(0, 255, 65, 0.1)',
-        backdropFilter: 'none',
-        animations: {
-          glow: true,
-          scanline: true,
-          'pixel-blink': true,
-        },
-      },
+    THEME: {
+      primary: '#000000',
+      secondary: '#111111',
+      accent: '#222222',
+      text: '#ffffff',
+      highlight: '#775ce3',
+      success: '#00ff00',
+      error: '#ff0000',
+      warning: '#ffaa00',
+      fontFamily: "'Segoe UI', Roboto, sans-serif",
+      borderRadius: '12px',
+      borderStyle: 'solid',
+      borderWidth: '1px',
+      boxShadow: '0 8px 32px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.1)',
+      backdropFilter: 'blur(10px)',
     },
-    currentTheme: 'Classic Autobot',
     PAINT_UNAVAILABLE: true,
     COORDINATE_MODE: 'rows',
     COORDINATE_DIRECTION: 'top-left',
@@ -201,39 +148,14 @@
     COORDINATE_BLOCK_HEIGHT: 2,
   };
 
-  const getCurrentTheme = () => CONFIG.THEMES[CONFIG.currentTheme];
-
-  const switchTheme = (themeName) => {
-    if (CONFIG.THEMES[themeName]) {
-      CONFIG.currentTheme = themeName;
-      saveThemePreference();
-
-      // APPLY THEME VARS/CLASS (new)
-      applyTheme();
-
-      // Recreate UI (kept for now)
-      createUI();
-    }
-  };
-
-  // Add this helper (place it after getCurrentTheme/switchTheme definitions)
   function applyTheme() {
-    const theme = getCurrentTheme();
     // Toggle theme class on documentElement so CSS vars cascade to our UI
     document.documentElement.classList.remove(
       'wplace-theme-classic',
       'wplace-theme-classic-light',
       'wplace-theme-neon'
     );
-
-    let themeClass = 'wplace-theme-classic'; // default
-    if (CONFIG.currentTheme === 'Neon Retro') {
-      themeClass = 'wplace-theme-neon';
-    } else if (CONFIG.currentTheme === 'Classic Light') {
-      themeClass = 'wplace-theme-classic-light';
-    }
-
-    document.documentElement.classList.add(themeClass);
+    document.documentElement.classList.add('wplace-theme-classic');
 
     // Also set CSS variables explicitly in case you want runtime overrides
     const root = document.documentElement;
@@ -243,42 +165,23 @@
       } catch {}
     };
 
-    setVar('--wplace-primary', theme.primary);
-    setVar('--wplace-secondary', theme.secondary);
-    setVar('--wplace-accent', theme.accent);
-    setVar('--wplace-text', theme.text);
-    setVar('--wplace-highlight', theme.highlight);
-    setVar('--wplace-success', theme.success);
-    setVar('--wplace-error', theme.error);
-    setVar('--wplace-warning', theme.warning);
+    setVar('--wplace-primary', CONFIG.THEME.primary);
+    setVar('--wplace-secondary', CONFIG.THEME.secondary);
+    setVar('--wplace-accent', CONFIG.THEME.accent);
+    setVar('--wplace-text', CONFIG.THEME.text);
+    setVar('--wplace-highlight', CONFIG.THEME.highlight);
+    setVar('--wplace-success', CONFIG.THEME.success);
+    setVar('--wplace-error', CONFIG.THEME.error);
+    setVar('--wplace-warning', CONFIG.THEME.warning);
 
     // Typography + look
-    setVar('--wplace-font', theme.fontFamily || "'Segoe UI', Roboto, sans-serif");
-    setVar('--wplace-radius', '' + (theme.borderRadius || '12px'));
-    setVar('--wplace-border-style', '' + (theme.borderStyle || 'solid'));
-    setVar('--wplace-border-width', '' + (theme.borderWidth || '1px'));
-    setVar('--wplace-backdrop', '' + (theme.backdropFilter || 'blur(10px)'));
+    setVar('--wplace-font', CONFIG.THEME.fontFamily || "'Segoe UI', Roboto, sans-serif");
+    setVar('--wplace-radius', '' + (CONFIG.THEME.borderRadius || '12px'));
+    setVar('--wplace-border-style', '' + (CONFIG.THEME.borderStyle || 'solid'));
+    setVar('--wplace-border-width', '' + (CONFIG.THEME.borderWidth || '1px'));
+    setVar('--wplace-backdrop', '' + (CONFIG.THEME.backdropFilter || 'blur(10px)'));
     setVar('--wplace-border-color', 'rgba(255,255,255,0.1)');
   }
-
-  const saveThemePreference = () => {
-    try {
-      localStorage.setItem('wplace-theme', CONFIG.currentTheme);
-    } catch (e) {
-      console.warn('Could not save theme preference:', e);
-    }
-  };
-
-  const loadThemePreference = () => {
-    try {
-      const saved = localStorage.getItem('wplace-theme');
-      if (saved && CONFIG.THEMES[saved]) {
-        CONFIG.currentTheme = saved;
-      }
-    } catch (e) {
-      console.warn('Could not load theme preference:', e);
-    }
-  };
 
   // Simple translation cache
   const translationCache = new Map();
@@ -885,7 +788,7 @@
       const canvas = new OffscreenCanvas(originalBitmap.width, originalBitmap.height);
       const ctx = canvas.getContext('2d');
 
-      // Disable antialiasing for pixel-perfect rendering
+      // Disable anti-aliasing for pixel-perfect rendering
       ctx.imageSmoothingEnabled = false;
 
       // Draw original tile first
@@ -975,8 +878,6 @@
   let tokenPromise = new Promise((resolve) => {
     _resolveToken = resolve;
   });
-  let retryCount = 0;
-  const MAX_RETRIES = 10;
   const MAX_BATCH_RETRIES = 10; // Maximum attempts for batch sending
   const TOKEN_LIFETIME = 240000; // 4 minutes (tokens typically last 5 min, use 4 for safety)
 
@@ -2289,92 +2190,6 @@
       return map;
     },
 
-    // Migration helpers for backward compatibility
-    migrateProgressToV2: (saved) => {
-      if (!saved) return saved;
-      const isV1 =
-        !saved.version ||
-        saved.version === '1' ||
-        saved.version === '1.0' ||
-        saved.version === '1.1';
-      if (!isV1) return saved;
-
-      try {
-        const migrated = { ...saved };
-        const width = migrated.imageData?.width;
-        const height = migrated.imageData?.height;
-        if (migrated.paintedMap && width && height) {
-          const data = Utils.packPaintedMapToBase64(migrated.paintedMap, width, height);
-          migrated.paintedMapPacked = { width, height, data };
-        }
-        delete migrated.paintedMap;
-        migrated.version = '2';
-        return migrated;
-      } catch (e) {
-        console.warn('Migration to v2 failed, using original data:', e);
-        return saved;
-      }
-    },
-
-    migrateProgressToV21: (saved) => {
-      if (!saved) return saved;
-      if (saved.version === '2.1') return saved;
-      const isV2 = saved.version === '2' || saved.version === '2.0';
-      const isV1 =
-        !saved.version ||
-        saved.version === '1' ||
-        saved.version === '1.0' ||
-        saved.version === '1.1';
-      if (!isV2 && !isV1) return saved; // save this for future
-      try {
-        const migrated = { ...saved };
-        // First migrate to v2 if needed
-        if (isV1) {
-          const width = migrated.imageData?.width;
-          const height = migrated.imageData?.height;
-          if (migrated.paintedMap && width && height) {
-            const data = Utils.packPaintedMapToBase64(migrated.paintedMap, width, height);
-            migrated.paintedMapPacked = { width, height, data };
-          }
-          delete migrated.paintedMap;
-        }
-        migrated.version = '2.1';
-        return migrated;
-      } catch (e) {
-        console.warn('Migration to v2.1 failed, using original data:', e);
-        return saved;
-      }
-    },
-
-    migrateProgressToV22: (data) => {
-      try {
-        const migrated = { ...data };
-        migrated.version = '2.2';
-
-        // Add new fields with default values
-        if (!migrated.state.coordinateMode) {
-          migrated.state.coordinateMode = CONFIG.COORDINATE_MODE;
-        }
-        if (!migrated.state.coordinateDirection) {
-          migrated.state.coordinateDirection = CONFIG.COORDINATE_DIRECTION;
-        }
-        if (!migrated.state.coordinateSnake) {
-          migrated.state.coordinateSnake = CONFIG.COORDINATE_SNAKE;
-        }
-        if (!migrated.state.blockWidth) {
-          migrated.state.blockWidth = CONFIG.COORDINATE_BLOCK_WIDTH;
-        }
-        if (!migrated.state.blockHeight) {
-          migrated.state.blockHeight = CONFIG.COORDINATE_BLOCK_HEIGHT;
-        }
-
-        return migrated;
-      } catch (e) {
-        console.warn('Migration to v2.2 failed, using original data:', e);
-        return data;
-      }
-    },
-
     buildPaintedMapPacked() {
       if (state.paintedMap && state.imageData) {
         const data = Utils.packPaintedMapToBase64(
@@ -2424,31 +2239,6 @@
       };
     },
 
-    migrateProgress(saved) {
-      if (!saved) return null;
-
-      let data = saved;
-      const ver = data.version;
-
-      // If version is missing or ≤ 1.x → first migrate to v2
-      if (!ver || ver === '1' || ver === '1.0' || ver === '1.1') {
-        data = Utils.migrateProgressToV2(data);
-      }
-
-      // If still older than v2.1 → migrate to 2.1
-      if (data.version === '2' || data.version === '2.0') {
-        data = Utils.migrateProgressToV21(data);
-      }
-
-      // If still older than v2.2 → migrate to 2.2
-      if (data.version === '2.1') {
-        data = Utils.migrateProgressToV22(data);
-      }
-
-      // Now data is guaranteed to be the latest version
-      return data;
-    },
-
     saveProgress: () => {
       try {
         const progressData = Utils.buildProgressData(state);
@@ -2465,15 +2255,7 @@
       try {
         const saved = localStorage.getItem('wplace-bot-progress');
         if (!saved) return null;
-        let data = JSON.parse(saved);
-        const migrated = Utils.migrateProgress(data);
-
-        if (migrated && migrated !== data) {
-          try {
-            localStorage.setItem('wplace-bot-progress', JSON.stringify(migrated));
-          } catch {}
-        }
-        return migrated;
+        return JSON.parse(saved);
       } catch (error) {
         console.error('Error loading progress:', error);
         return null;
@@ -2585,10 +2367,8 @@
         if (!data || !data.state) {
           throw new Error('Invalid file format');
         }
-        const migrated = Utils.migrateProgress(data);
 
-        const success = Utils.restoreProgress(migrated);
-        return success;
+        return Utils.restoreProgress(data);
       } catch (error) {
         console.error('Error loading from file:', error);
         throw error;
@@ -3250,10 +3030,8 @@
     if (existingResizeContainer) existingResizeContainer.remove();
     if (existingResizeOverlay) existingResizeOverlay.remove();
 
-    loadThemePreference();
     await initializeTranslations();
 
-    const theme = getCurrentTheme();
     applyTheme(); // <- new: set CSS vars and theme class before building UI
 
     function appendLinkOnce(href, attributes = {}) {
@@ -3263,7 +3041,6 @@
       );
       if (exists) return;
 
-      // Create a new link element
       const link = document.createElement('link');
       link.rel = 'stylesheet';
       link.href = href;
@@ -3273,15 +3050,10 @@
         link.setAttribute(key, value);
       }
 
-      // Append the link element to the document head
       document.head.appendChild(link);
     }
 
-    appendLinkOnce('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css');
-
-    if (theme.fontFamily.includes('Press Start 2P')) {
-      appendLinkOnce('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-    }
+    appendLinkOnce('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css');
 
     appendLinkOnce('https://wplace-autobot.github.io/WPlace-AutoBOT/main/auto-image-styles.css', {
       'data-wplace-theme': 'true',
@@ -3467,9 +3239,9 @@
     settingsContainer.id = 'wplace-settings-container';
 
     // Apply theme-based styling
-    const themeBackground = theme.primary
-      ? `linear-gradient(135deg, ${theme.primary} 0%, ${theme.secondary || theme.primary} 100%)`
-      : `linear-gradient(135deg, #667eea 0%, #764ba2 100%)`;
+    const themeBackground = `linear-gradient(135deg, ${CONFIG.THEME.primary} 0%, ${
+      CONFIG.THEME.secondary || CONFIG.THEME.primary
+    } 100%)`;
 
     settingsContainer.className = 'wplace-settings-container-base';
     // Apply theme-specific background
@@ -3478,22 +3250,12 @@
       min-width: 420px;
       max-width: 480px;
       z-index: 99999;
-      color: ${theme.text || 'white'};
-      font-family: ${theme.fontFamily || "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"};
-      box-shadow: ${
-        theme.boxShadow || '0 20px 40px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.1)'
-      };
-      backdrop-filter: ${theme.backdropFilter || 'blur(10px)'};
+      color: ${CONFIG.THEME.text};
+      font-family: ${CONFIG.THEME.fontFamily};
+      box-shadow: '0 8px 32px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.1)';
+      backdrop-filter: ${CONFIG.THEME.backdropFilter};
       overflow: hidden;
       animation: settings-slide-in 0.4s ease-out;
-      ${
-        theme.animations?.glow
-          ? `
-        box-shadow: ${theme.boxShadow || '0 20px 40px rgba(0,0,0,0.3)'}, 
-                   0 0 30px ${theme.highlight || theme.neon || '#00ffff'};
-      `
-          : ''
-      }
     `;
 
     // noinspection CssInvalidFunction
@@ -3545,63 +3307,60 @@
 
         <!-- Overlay Settings Section -->
         <div class="wplace-settings-section">
-          <label class="wplace-settings-section-label" style="color: ${theme.text || 'white'};">
+          <label class="wplace-settings-section-label" style="color: ${
+            CONFIG.THEME.text || 'white'
+          };">
             <i class="fas fa-eye wplace-icon-eye" style="color: ${
-              theme.highlight || '#48dbfb'
+              CONFIG.THEME.highlight || '#48dbfb'
             };"></i>
             Overlay Settings
           </label>
           <div class="wplace-settings-section-wrapper wplace-overlay-wrapper" style="
-            background: ${theme.accent ? `${theme.accent}20` : 'rgba(255,255,255,0.1)'}; 
-            border-radius: ${theme.borderRadius || '12px'}; 
+            background: ${
+              CONFIG.THEME.accent ? `${CONFIG.THEME.accent}20` : 'rgba(255,255,255,0.1)'
+            }; 
+            border-radius: ${CONFIG.THEME.borderRadius || '12px'}; 
             padding: 18px; 
-            border: 1px solid ${theme.accent || 'rgba(255,255,255,0.1)'};
-            ${
-              theme.animations?.glow
-                ? `
-              box-shadow: 0 0 15px ${theme.accent || 'rgba(255,255,255,0.1)'}33;
-            `
-                : ''
-            }
+            border: 1px solid ${CONFIG.THEME.accent || 'rgba(255,255,255,0.1)'};
           ">
               <!-- Opacity Slider -->
               <div class="wplace-overlay-opacity-control">
                 <div class="wplace-overlay-opacity-header">
                    <span class="wplace-overlay-opacity-label" style="color: ${
-                     theme.text || 'white'
+                     CONFIG.THEME.text || 'white'
                    };">Overlay Opacity</span>
                    <div id="overlayOpacityValue" class="wplace-overlay-opacity-value" style="
-                     background: ${theme.secondary || 'rgba(0,0,0,0.2)'}; 
-                     color: ${theme.text || 'white'};
+                     background: ${CONFIG.THEME.secondary || 'rgba(0,0,0,0.2)'}; 
+                     color: ${CONFIG.THEME.text || 'white'};
                      padding: 4px 8px; 
-                     border-radius: ${theme.borderRadius === '0' ? '0' : '6px'}; 
+                     border-radius: ${CONFIG.THEME.borderRadius === '0' ? '0' : '6px'}; 
                      font-size: 12px;
-                     border: 1px solid ${theme.accent || 'transparent'};
+                     border: 1px solid ${CONFIG.THEME.accent || 'transparent'};
                    ">${Math.round(state.overlayOpacity * 100)}%</div>
                 </div>
                 <input type="range" id="overlayOpacitySlider" min="0.1" max="1" step="0.05" value="${
                   state.overlayOpacity
                 }" class="wplace-overlay-opacity-slider" style="
-                  background: linear-gradient(to right, ${theme.highlight || '#48dbfb'} 0%, ${
-      theme.purple || theme.neon || '#d3a4ff'
-    } 100%); 
-                  border-radius: ${theme.borderRadius === '0' ? '0' : '4px'}; 
+                  background: linear-gradient(to right, ${
+                    CONFIG.THEME.highlight || '#48dbfb'
+                  } 0%, '#d3a4ff' 100%); 
+                  border-radius: ${CONFIG.THEME.borderRadius === '0' ? '0' : '4px'}; 
                 ">
               </div>
               <!-- Blue Marble Toggle -->
               <label for="enableBlueMarbleToggle" class="wplace-settings-toggle">
                   <div>
                       <span class="wplace-settings-toggle-title" style="color: ${
-                        theme.text || 'white'
+                        CONFIG.THEME.text || 'white'
                       };">Blue Marble Effect</span>
                       <p class="wplace-settings-toggle-description" style="color: ${
-                        theme.text ? `${theme.text}BB` : 'rgba(255,255,255,0.7)'
+                        CONFIG.THEME.text ? `${CONFIG.THEME.text}BB` : 'rgba(255,255,255,0.7)'
                       };">Renders a dithered "shredded" overlay.</p>
                   </div>
                   <input type="checkbox" id="enableBlueMarbleToggle" ${
                     state.blueMarbleEnabled ? 'checked' : ''
                   } class="wplace-settings-checkbox" style="
-                    accent-color: ${theme.highlight || '#48dbfb'};
+                    accent-color: ${CONFIG.THEME.highlight || '#48dbfb'};
                   "/>
               </label>
           </div>
@@ -3618,11 +3377,13 @@
             <!-- Paint White Pixels -->
             <label class="wplace-settings-toggle">
               <div>
-                <span class="wplace-settings-toggle-title" style="color: ${theme.text || 'white'};">
+                <span class="wplace-settings-toggle-title" style="color: ${
+                  CONFIG.THEME.text || 'white'
+                };">
                   ${Utils.t('paintWhitePixels')}
                 </span>
                 <p class="wplace-settings-toggle-description" style="color: ${
-                  theme.text ? `${theme.text}BB` : 'rgba(255,255,255,0.7)'
+                  CONFIG.THEME.text ? `${CONFIG.THEME.text}BB` : 'rgba(255,255,255,0.7)'
                 };">
                   ${Utils.t('paintWhitePixelsDescription')}
                 </p>
@@ -3631,17 +3392,19 @@
                 state.paintWhitePixels ? 'checked' : ''
               } 
                 class="wplace-settings-checkbox"
-                style="accent-color: ${theme.highlight || '#48dbfb'};"/>
+                style="accent-color: ${CONFIG.THEME.highlight || '#48dbfb'};"/>
             </label>
             
             <!-- Paint Transparent Pixels -->
             <label class="wplace-settings-toggle">
               <div>
-                <span class="wplace-settings-toggle-title" style="color: ${theme.text || 'white'};">
+                <span class="wplace-settings-toggle-title" style="color: ${
+                  CONFIG.THEME.text || 'white'
+                };">
                   ${Utils.t('paintTransparentPixels')}
                 </span>
                 <p class="wplace-settings-toggle-description" style="color: ${
-                  theme.text ? `${theme.text}BB` : 'rgba(255,255,255,0.7)'
+                  CONFIG.THEME.text ? `${CONFIG.THEME.text}BB` : 'rgba(255,255,255,0.7)'
                 };">
                   ${Utils.t('paintTransparentPixelsDescription')}
                 </p>
@@ -3650,21 +3413,21 @@
                 state.paintTransparentPixels ? 'checked' : ''
               } 
                 class="wplace-settings-checkbox"
-                style="accent-color: ${theme.highlight || '#48dbfb'};"/>
+                style="accent-color: ${CONFIG.THEME.highlight || '#48dbfb'};"/>
             </label>
             <label class="wplace-settings-toggle">
               <div>
                 <span class="wplace-settings-toggle-title" style="color: ${
-                  theme.text || 'white'
+                  CONFIG.THEME.text || 'white'
                 };">${Utils.t('paintUnavailablePixels')}</span>
                 <p class="wplace-settings-toggle-description" style="color: ${
-                  theme.text ? `${theme.text}BB` : 'rgba(255,255,255,0.7)'
+                  CONFIG.THEME.text ? `${CONFIG.THEME.text}BB` : 'rgba(255,255,255,0.7)'
                 };">${Utils.t('paintUnavailablePixelsDescription')}</p>
               </div>
               <input type="checkbox" id="paintUnavailablePixelsToggle" ${
                 state.paintUnavailablePixels ? 'checked' : ''
               } class="wplace-settings-checkbox" style="
-                    accent-color: ${theme.highlight || '#48dbfb'};
+                    accent-color: ${CONFIG.THEME.highlight || '#48dbfb'};
                   "/>
             </label>
           </div>
@@ -3799,16 +3562,16 @@
             <label class="wplace-settings-toggle">
               <div>
                 <span class="wplace-settings-toggle-title" style="color: ${
-                  theme.text || 'white'
+                  CONFIG.THEME.text || 'white'
                 };">Snake Pattern</span>
                 <p class="wplace-settings-toggle-description" style="color: ${
-                  theme.text ? `${theme.text}BB` : 'rgba(255,255,255,0.7)'
+                  CONFIG.THEME.text ? `${CONFIG.THEME.text}BB` : 'rgba(255,255,255,0.7)'
                 };">Alternate direction for each row/column (zigzag pattern)</p>
               </div>
               <input type="checkbox" id="coordinateSnakeToggle" ${
                 state.coordinateSnake ? 'checked' : ''
               } class="wplace-settings-checkbox" style="
-                    accent-color: ${theme.highlight || '#48dbfb'};
+                    accent-color: ${CONFIG.THEME.highlight || '#48dbfb'};
                   "/>
             </label>
           </div>
@@ -3877,26 +3640,6 @@
                 'test'
               )}</span></button>
             </div>
-          </div>
-        </div>
-
-        <!-- Theme Selection Section -->
-        <div class="wplace-settings-section">
-          <label class="wplace-settings-section-label">
-            <i class="fas fa-palette wplace-icon-palette"></i>
-            ${Utils.t('themeSettings')}
-          </label>
-          <div class="wplace-settings-section-wrapper">
-            <select id="themeSelect" class="wplace-settings-select">
-              ${Object.keys(CONFIG.THEMES)
-                .map(
-                  (themeName) =>
-                    `<option value="${themeName}" ${
-                      CONFIG.currentTheme === themeName ? 'selected' : ''
-                    } class="wplace-settings-option">${themeName}</option>`
-                )
-                .join('')}
-            </select>
           </div>
         </div>
       </div>
@@ -4000,7 +3743,9 @@
     const resizeContainer = document.createElement('div');
     resizeContainer.className = 'resize-container';
     resizeContainer.innerHTML = `
-      <h3 class="resize-dialog-title" style="color: ${theme.text}">${Utils.t('resizeImage')}</h3>
+      <h3 class="resize-dialog-title" style="color: ${CONFIG.THEME.text}">${Utils.t(
+      'resizeImage'
+    )}</h3>
       <div class="resize-controls">
         <label class="resize-control-label">
           Width: <span id="widthValue">0</span>px
@@ -7681,7 +7426,6 @@
   }
 
   // Load theme preference immediately on startup before creating UI
-  loadThemePreference();
   applyTheme();
 
   createUI().then(() => {
