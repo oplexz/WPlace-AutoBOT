@@ -191,7 +191,7 @@
 
   // Function to load translations from JSON file with retry mechanism
   const loadTranslations = async (retryCount = 0) => {
-    const LANGUAGE = 'EN';
+    const LANGUAGE = 'en';
 
     if (loadedTranslations[LANGUAGE]) {
       return loadedTranslations[LANGUAGE];
