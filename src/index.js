@@ -2,7 +2,6 @@
 
 import { CONFIG } from './config.js';
 import { ThemeManager } from './theme.js';
-import { translationManager, t } from './translations.js';
 
 (async () => {
     // GLOBAL STATE
@@ -732,7 +731,7 @@ import { translationManager, t } from './translations.js';
             setTurnstileToken(token);
             if (document.querySelector('#statusText')?.textContent.includes('CAPTCHA')) {
                 Utils.showAlert('Token captured successfully! You can start the bot now.', 'success');
-                updateUI('colorsFound', 'success', { count: state.availableColors.length });
+                updateUI(`✅ ${state.availableColors.length} available colors found. Ready to upload.`, 'success');
             }
         }
     });
@@ -2246,8 +2245,6 @@ import { translationManager, t } from './translations.js';
         if (existingStats) existingStats.remove();
         if (existingSettings) existingSettings.remove();
 
-        await translationManager.initializeTranslations();
-
         ThemeManager.applyTheme();
         ThemeManager.loadThemeStyles();
 
@@ -3429,7 +3426,7 @@ import { translationManager, t } from './translations.js';
 
                 const success = Utils.saveProgress();
                 if (success) {
-                    updateUI('autoSaved', 'success');
+                    updateUI('✅ Progress saved automatically', 'success');
                     Utils.showAlert('✅ Progress saved automatically', 'success');
                 } else {
                     Utils.showAlert('❌ Error saving progress', 'error');
@@ -3450,7 +3447,7 @@ import { translationManager, t } from './translations.js';
 
                 const savedData = Utils.loadProgress();
                 if (!savedData) {
-                    updateUI('noSavedData', 'warning');
+                    updateUI('❌ No saved progress found', 'warning');
                     Utils.showAlert('❌ No saved progress found', 'warning');
                     return;
                 }
@@ -3464,7 +3461,7 @@ import { translationManager, t } from './translations.js';
                 if (confirmLoad) {
                     const success = Utils.restoreProgress(savedData);
                     if (success) {
-                        updateUI('dataLoaded', 'success');
+                        updateUI('✅ Progress loaded successfully', 'success');
                         Utils.showAlert('✅ Progress loaded successfully', 'success');
                         updateDataButtons();
 
@@ -3492,8 +3489,7 @@ import { translationManager, t } from './translations.js';
             });
         }
 
-        updateUI = (messageKey, type = 'default', params = {}, silent = false) => {
-            const message = t(messageKey, params);
+        updateUI = (message, type = 'default', silent = false) => {
             statusText.textContent = message;
             statusText.className = `wplace-status status-${type}`;
 
@@ -3702,7 +3698,10 @@ import { translationManager, t } from './translations.js';
             uploadBtn.addEventListener('click', async () => {
                 const availableColors = Utils.extractAvailableColors();
                 if (availableColors === null || availableColors.length < 10) {
-                    updateUI('noColorsFound', 'error');
+                    updateUI(
+                        '❌ To update the color swatch, open the color palette on the site and try again!',
+                        'error'
+                    );
                     Utils.showAlert(
                         '❌ To update the color swatch, open the color palette on the site and try again!',
                         'error'
@@ -3713,18 +3712,19 @@ import { translationManager, t } from './translations.js';
                 if (!state.colorsChecked) {
                     state.availableColors = availableColors;
                     state.colorsChecked = true;
-                    updateUI('colorsFound', 'success', { count: availableColors.length });
+                    updateUI(`✅ ${availableColors.length} available colors found. Ready to upload.`, 'success');
                     updateStats();
                     selectPosBtn.disabled = false;
                 }
 
                 try {
-                    updateUI('loadingImage', 'default');
+                    updateUI('🖼️ Loading image...', 'default');
                     const imageSrc = await Utils.createImageUploader();
                     if (!imageSrc) {
-                        updateUI('colorsFound', 'success', {
-                            count: state.availableColors.length,
-                        });
+                        updateUI(
+                            `✅ ${state.availableColors.length} available colors found. Ready to upload.`,
+                            'success'
+                        );
                         return;
                     }
 
@@ -3781,10 +3781,10 @@ import { translationManager, t } from './translations.js';
 
                     updateStats();
                     updateDataButtons();
-                    updateUI('imageLoaded', 'success', { count: totalValidPixels });
+                    updateUI(`✅ Image loaded with ${totalValidPixels} valid pixels`, 'success');
                 } catch (error) {
                     console.error('Error processing image:', error);
-                    updateUI('imageError', 'error');
+                    updateUI('❌ Error loading image', 'error');
                 }
             });
         }
@@ -3799,7 +3799,7 @@ import { translationManager, t } from './translations.js';
                 startBtn.disabled = true;
 
                 Utils.showAlert('Paint the first pixel at the location where you want the art to start!', 'info');
-                updateUI('waitingPosition', 'default');
+                updateUI('👆 Waiting for you to paint the reference pixel...', 'default');
 
                 const tempFetch = async (url, options) => {
                     if (
@@ -3837,7 +3837,7 @@ import { translationManager, t } from './translations.js';
 
                                     window.fetch = originalFetch;
                                     state.selectingPosition = false;
-                                    updateUI('positionSet', 'success');
+                                    updateUI('✅ Position set successfully!', 'success');
                                 }
                             }
 
@@ -3856,7 +3856,7 @@ import { translationManager, t } from './translations.js';
                     if (state.selectingPosition) {
                         window.fetch = originalFetch;
                         state.selectingPosition = false;
-                        updateUI('positionTimeout', 'error');
+                        updateUI('❌ Timeout for position selection', 'error');
                         Utils.showAlert('❌ Timeout for position selection', 'error');
                     }
                 }, 120000);
@@ -3865,7 +3865,7 @@ import { translationManager, t } from './translations.js';
 
         async function startPainting() {
             if (!state.imageLoaded || !state.startPosition || !state.region) {
-                updateUI('missingRequirements', 'error');
+                updateUI('❌ Load an image and select a position first', 'error');
                 return;
             }
             await ensureToken();
@@ -3880,13 +3880,13 @@ import { translationManager, t } from './translations.js';
             saveBtn.disabled = true;
             toggleOverlayBtn.disabled = true;
 
-            updateUI('startPaintingMsg', 'success');
+            updateUI('🎨 Starting painting...', 'success');
 
             try {
                 await processImage();
             } catch (e) {
                 console.error('Unexpected error:', e);
-                updateUI('paintingError', 'error');
+                updateUI('❌ Unexpected error during painting', 'error');
             } finally {
                 state.running = false;
                 stopBtn.disabled = true;
@@ -3912,7 +3912,7 @@ import { translationManager, t } from './translations.js';
                 state.stopFlag = true;
                 state.running = false;
                 stopBtn.disabled = true;
-                updateUI('paintingStoppedByUser', 'warning');
+                updateUI('⏹️ Painting stopped by user', 'warning');
 
                 if (state.imageLoaded && state.paintedPixels > 0) {
                     Utils.saveProgress();
@@ -3992,13 +3992,8 @@ import { translationManager, t } from './translations.js';
         const timeText = Utils.msToTimeText(remainingMs);
 
         updateUI(
-            'noChargesThreshold',
+            `⌛ Waiting to reach ${threshold} charges. Currently ${state.displayCharges}. Estimated time: ${timeText}.`,
             'warning',
-            {
-                threshold,
-                current: state.displayCharges,
-                time: timeText,
-            },
             true
         );
     }
@@ -4161,10 +4156,7 @@ import { translationManager, t } from './translations.js';
                 spentSinceShot: state.fullChargeData.spentSinceShot + batchSize,
             };
             updateStats();
-            updateUI('paintingProgress', 'default', {
-                painted: state.paintedPixels,
-                total: state.totalPixels,
-            });
+            updateUI('paintingProgress', 'default');
             Utils.performSmartSave();
 
             if (CONFIG.PAINTING_SPEED_ENABLED && state.paintingSpeed > 0 && batchSize > 0) {
@@ -4175,7 +4167,7 @@ import { translationManager, t } from './translations.js';
         } else {
             console.error(`❌ Batch failed permanently after retries. Stopping painting.`);
             state.stopFlag = true;
-            updateUI('paintingBatchFailed', 'error');
+            updateUI('❌ Failed to send pixel batch after retries. Painting stopped.', 'error');
         }
 
         pixelBatch.pixels = [];
@@ -4199,7 +4191,7 @@ import { translationManager, t } from './translations.js';
         );
 
         if (!tilesReady) {
-            updateUI('overlayTilesNotLoaded', 'error');
+            updateUI('❌ Required map tiles not loaded. Check connection or retry.', 'error');
             state.stopFlag = true;
             return;
         }
@@ -4296,7 +4288,7 @@ import { translationManager, t } from './translations.js';
                         await flushPixelBatch(pixelBatch);
                     }
                     state.lastPosition = { x, y };
-                    updateUI('paintingPaused', 'warning', { x, y });
+                    updateUI(`⏸️ Painting paused at position X: ${x}, Y: ${y}`, 'warning');
                     // noinspection UnnecessaryLabelOnBreakStatementJS
                     break outerLoop;
                 }
@@ -4361,7 +4353,7 @@ import { translationManager, t } from './translations.js';
                         } else {
                             console.error(`❌ Batch failed permanently after retries. Stopping painting.`);
                             state.stopFlag = true;
-                            updateUI('paintingBatchFailed', 'error');
+                            updateUI('❌ Failed to send pixel batch after retries. Painting stopped.', 'error');
                             // noinspection UnnecessaryLabelOnBreakStatementJS
                             break outerLoop;
                         }
@@ -4413,7 +4405,7 @@ import { translationManager, t } from './translations.js';
                     }
                 } catch (e) {
                     console.error(`[DEBUG] Error checking existing pixel at (${pixelX}, ${pixelY}):`, e);
-                    updateUI('paintingPixelCheckFailed', 'error', { x: pixelX, y: pixelY });
+                    updateUI(`❌ Failed to read pixel at (${pixelX}, ${pixelY}). Painting stopped.`, 'error');
                     state.stopFlag = true;
                     // noinspection UnnecessaryLabelOnBreakStatementJS
                     break outerLoop;
@@ -4440,7 +4432,7 @@ import { translationManager, t } from './translations.js';
                     if (!success) {
                         console.error(`❌ Batch failed permanently after retries. Stopping painting.`);
                         state.stopFlag = true;
-                        updateUI('paintingBatchFailed', 'error');
+                        updateUI('❌ Failed to send pixel batch after retries. Painting stopped.', 'error');
                         // noinspection UnnecessaryLabelOnBreakStatementJS
                         break outerLoop;
                     }
@@ -4484,7 +4476,7 @@ import { translationManager, t } from './translations.js';
             // Save progress when stopped to preserve painted map
             Utils.saveProgress();
         } else {
-            updateUI('paintingComplete', 'success', { count: state.paintedPixels });
+            updateUI(`✅ Painting complete! ${state.paintedPixels} pixels painted.`, 'success');
             state.lastPosition = { x: 0, y: 0 };
             // Keep painted map until user starts new project
             // state.paintedMap = null  // Commented out to preserve data
@@ -4555,7 +4547,7 @@ import { translationManager, t } from './translations.js';
                 return true;
             } else if (result === 'token_error') {
                 console.log(`🔑 Token error on attempt ${attempt}, regenerating...`);
-                updateUI('captchaSolving', 'warning');
+                updateUI('🔑 Generating Turnstile token...', 'warning');
                 try {
                     await handleCaptcha();
                     // Don't count token regeneration as a failed attempt
@@ -4563,7 +4555,7 @@ import { translationManager, t } from './translations.js';
                     continue;
                 } catch (e) {
                     console.error(`❌ Token regeneration failed on attempt ${attempt}:`, e);
-                    updateUI('captchaFailed', 'error');
+                    updateUI('❌ Turnstile token generation failed. Trying fallback method...', 'error');
                     // Wait longer before retrying after token failure
                     await Utils.sleep(5000);
                 }
@@ -4580,7 +4572,7 @@ import { translationManager, t } from './translations.js';
             console.error(
                 `❌ Batch failed after ${maxRetries} attempts (MAX_BATCH_RETRIES=${MAX_BATCH_RETRIES}). This will stop painting to prevent infinite loops.`
             );
-            updateUI('paintingError', 'error');
+            updateUI('❌ Unexpected error during painting', 'error');
             return false;
         }
 
@@ -4894,14 +4886,14 @@ import { translationManager, t } from './translations.js';
         // Skip if already have valid token
         if (isTokenValid()) {
             console.log('✅ Valid token already available, skipping initialization');
-            updateUI('tokenReady', 'success');
+            updateUI('✅ Token generator ready - you can now start painting!', 'success');
             enableProgressDataOperations(); // Enable file operations since initial setup is complete
             return;
         }
 
         try {
             console.log('🔧 Initializing Turnstile token generator...');
-            updateUI('initializingToken', 'default');
+            updateUI('🔧 Initializing Turnstile token generator...', 'default');
 
             console.log('Attempting to load Turnstile script...');
             await Utils.loadTurnstile();
@@ -4911,19 +4903,19 @@ import { translationManager, t } from './translations.js';
             if (token) {
                 setTurnstileToken(token);
                 console.log('✅ Startup token generated successfully');
-                updateUI('tokenReady', 'success');
+                updateUI('✅ Token generator ready - you can now start painting!', 'success');
                 Utils.showAlert('🔑 Token generator ready!', 'success');
                 enableProgressDataOperations(); // Enable file operations since initial setup is complete
             } else {
                 console.warn('⚠️ Startup token generation failed (no token received), will retry when needed');
-                updateUI('tokenRetryLater', 'warning');
+                updateUI('⚠️ Token generator will retry when needed', 'warning');
                 // Still enable file operations even if initial token generation fails
                 // Users can load progress and use manual/hybrid modes
                 enableProgressDataOperations();
             }
         } catch (error) {
             console.error('❌ Critical error during Turnstile initialization:', error); // More specific error
-            updateUI('tokenRetryLater', 'warning');
+            updateUI('⚠️ Token generator will retry when needed', 'warning');
             // Still enable file operations even if initial setup fails
             // Users can load progress and use manual/hybrid modes
             enableProgressDataOperations();
